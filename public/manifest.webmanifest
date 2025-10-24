@@ -1,0 +1,14 @@
+{
+  "name": "Virtual Sommelier",
+  "short_name": "Sommelier",
+  "start_url": "/start",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
+  "icons": [
+    { "src": "/faviconvirtualsommelier.jpg", "sizes": "192x192", "type": "image/jpeg" },
+    { "src": "/faviconvirtualsommelier.jpg", "sizes": "512x512", "type": "image/jpeg" }
+  ]
+}
+
+

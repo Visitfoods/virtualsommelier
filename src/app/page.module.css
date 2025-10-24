@@ -1,0 +1,1474 @@
+/* Estilos para a página principal com interface de vídeo e chat */
+
+/* Loading Screen Styles */
+.loadingOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #000000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  animation: fadeIn 0.5s ease-in-out;
+  transition: opacity 0.5s ease-out;
+}
+
+.loadingContent {
+  text-align: center;
+  color: white;
+  max-width: 800px;
+  padding: 40px;
+  text-transform: uppercase;
+}
+
+.loadingLogo {
+  width: 120px;
+  height: 120px;
+  margin-bottom: 30px;
+  animation: logoPulse 2s ease-in-out infinite;
+}
+
+.loadingTitle {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 30px;
+  color: white;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  animation: titlePulse 2s ease-in-out infinite;
+}
+
+.loadingProgressContainer {
+  margin-bottom: 30px;
+}
+
+.loadingProgressBar {
+  width: 100%;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 15px;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.loadingProgressFill {
+  height: 100%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background-size: 200% 100%;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+  animation: progressShimmer 2s ease-in-out infinite;
+  box-shadow: 0 0 10px rgba(102, 126, 234, 0.5);
+}
+
+.loadingProgressText {
+  font-size: 16px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.9);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes logoPulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.05);
+  }
+}
+
+@keyframes titlePulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+@keyframes progressShimmer {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+/* Interface com vídeo */
+.bgVideoContainer {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Layout em duas colunas quando o chat está aberto em desktop */
+@media (min-width: 1024px) {
+  .chatbotOpen.bgVideoContainer {
+    flex-direction: row;
+  }
+  
+  .chatbotOpen .backgroundImage {
+    width: 30% !important;
+    left: 0 !important;
+  }
+  
+  .chatbotOpen .flagsBar {
+    width: 30% !important;
+    left: 0 !important;
+  }
+}
+
+
+.backgroundImage {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: -1;
+}
+
+/* Barra de bandeiras no topo */
+.flagsBar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background: #000000;
+  z-index: 2000;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Botão voltar ao chat - aparece junto às bandeiras */
+.backToChatButton {
+  background: linear-gradient(135deg, var(--vg-gradient-start, #51aecd) 0%, var(--vg-gradient-end, #cb3c58) 100%);
+  background-size: 200% 200%;
+  border: none;
+  border-radius: 20px;
+  padding: 6px 12px;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(81, 174, 205, 0.4);
+  position: relative;
+  overflow: visible !important;
+  min-width: 100px;
+  height: 32px;
+  animation: buttonAppear 0.5s ease-out, gradientShift 3s ease-in-out infinite, buttonPulseContinuous 2s ease-in-out infinite;
+  margin-left: 0;
+}
+
+.backToChatButton::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.8) 0%, transparent 70%);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: all 0.3s ease;
+  opacity: 0;
+  z-index: 0;
+}
+
+.backToChatButton:active::after {
+  width: 60px;
+  height: 60px;
+  opacity: 1;
+  z-index: 0;
+}
+
+@keyframes buttonAppear {
+  0% {
+    opacity: 0;
+    transform: scale(0.8) translateY(-10px) rotate(-10deg);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(0.9) translateY(-5px) rotate(-5deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0) rotate(0deg);
+  }
+}
+
+.backToChatButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(81, 174, 205, 0.6);
+  animation: buttonPulseContinuous 1s ease-in-out infinite;
+}
+
+.backToChatButton:hover::before {
+  left: 100%;
+}
+
+.backToChatButton:focus {
+  outline: none;
+  box-shadow: 0 4px 15px rgba(81, 174, 205, 0.4), 0 0 0 3px rgba(81, 174, 205, 0.3);
+}
+
+.backToChatButton:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.8);
+  outline-offset: 2px;
+}
+
+.backToChatButton:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 10px rgba(81, 174, 205, 0.4);
+  animation: buttonClick 0.3s ease, buttonShake 0.3s ease;
+}
+
+@keyframes buttonClick {
+  0% {
+    box-shadow: 0 2px 10px rgba(81, 174, 205, 0.4);
+  }
+  50% {
+    box-shadow: 0 2px 20px rgba(81, 174, 205, 0.8), 0 0 30px rgba(81, 174, 205, 0.6);
+  }
+  100% {
+    box-shadow: 0 2px 10px rgba(81, 174, 205, 0.4);
+  }
+}
+
+@keyframes buttonShake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-2px); }
+  75% { transform: translateX(2px); }
+}
+
+@keyframes gradientShift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+@keyframes buttonPulseContinuous {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+.backToChatButton .buttonText {
+  color: white;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* Esconder o botão voltar ao chat quando o chat está aberto */
+.chatbotOpen .backToChatButton {
+  display: none !important;
+}
+
+/* Pontos personalizados para as instruções - iguais ao Portugal dos Pequenitos */
+.customBullet {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.customBullet::before {
+  content: '';
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* Estilo para os itens das instruções */
+.instructionItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 1.1rem;
+  color: rgba(255, 255, 255, 0.95);
+  line-height: 1.4;
+  margin-bottom: 8px;
+}
+
+/* Desktop: Ajustar barra de bandeiras quando chat está aberto - apenas em ecrãs muito grandes */
+@media (min-width: 1200px) {
+  .chatbotOpen .flagsBar {
+    width: 30% !important;
+    left: 0 !important;
+  }
+  
+  /* Ajustar botão de voltar ao chat em desktop */
+  .backToChatButton {
+    min-width: 120px;
+    height: 36px;
+    padding: 8px 16px;
+    order: -1; /* Coloca o botão primeiro (à esquerda) */
+  }
+  
+  .backToChatButton .buttonText {
+    font-size: 13px;
+  }
+  
+  /* Quando o botão aparece, reorganizar o layout */
+  .flagsContainer:has(.backToChatButton) {
+    justify-content: space-between !important;
+    align-items: center;
+  }
+  
+  .flagsContainer:has(.backToChatButton) .flagsGroup {
+    margin-left: auto;
+  }
+}
+
+.flagsContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 40px;
+  max-width: 100%;
+  margin: 0 auto;
+  transition: all 0.3s ease;
+  position: relative;
+  padding-left: 25px;
+  padding-right: 25px;
+}
+
+.flagItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.flagItem:hover {
+  transform: scale(1.1);
+}
+
+.flagItem svg {
+  width: 32px;
+  height: 20px;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+  border-radius: 2px;
+}
+
+.flagsGroup {
+  display: flex;
+  gap: 40px;
+  align-items: center;
+}
+
+/* Responsividade para a barra de bandeiras */
+@media (max-width: 700px) {
+  .flagsContainer {
+    gap: 25px;
+  }
+  
+  .flagsGroup {
+    gap: 25px;
+  }
+  
+  .flagItem svg {
+    width: 28px;
+    height: 18px;
+  }
+  
+  .backToChatButton {
+    min-width: 80px;
+    height: 28px;
+    padding: 4px 10px;
+    order: -1; /* Coloca o botão primeiro (à esquerda) */
+  }
+  
+  .backToChatButton .buttonText {
+    font-size: 10px;
+  }
+  
+  /* Quando o botão aparece, reorganizar o layout */
+  .flagsContainer:has(.backToChatButton) {
+    justify-content: space-between !important;
+    align-items: center;
+  }
+  
+  .flagsContainer:has(.backToChatButton) .flagsGroup {
+    margin-left: auto;
+  }
+}
+
+/* Ecrãs médios */
+@media (min-width: 701px) and (max-width: 1024px) {
+  .backToChatButton {
+    min-width: 100px;
+    height: 32px;
+    padding: 6px 12px;
+    order: -1; /* Coloca o botão primeiro (à esquerda) */
+  }
+  
+  .backToChatButton .buttonText {
+    font-size: 11px;
+  }
+  
+  /* Quando o botão aparece, reorganizar o layout */
+  .flagsContainer:has(.backToChatButton) {
+    justify-content: space-between !important;
+    align-items: center;
+  }
+  
+  .flagsContainer:has(.backToChatButton) .flagsGroup {
+    margin-left: auto;
+  }
+}
+
+@media (max-width: 500px) {
+  .flagsContainer {
+    gap: 18px;
+  }
+  
+  .flagsGroup {
+    gap: 18px;
+  }
+  
+  .flagItem svg {
+    width: 24px;
+    height: 16px;
+  }
+  
+  .backToChatButton {
+    min-width: 70px;
+    height: 24px;
+    padding: 3px 8px;
+    order: -1; /* Coloca o botão primeiro (à esquerda) */
+  }
+  
+  .backToChatButton .buttonText {
+    font-size: 9px;
+  }
+  
+  /* Quando o botão aparece, reorganizar o layout */
+  .flagsContainer:has(.backToChatButton) {
+    justify-content: space-between !important;
+    align-items: center;
+  }
+  
+  .flagsContainer:has(.backToChatButton) .flagsGroup {
+    margin-left: auto;
+  }
+}
+
+
+
+/* Barra de pesquisa */
+.glassmorphismControlBar {
+  position: absolute;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+  background: rgba(255, 255, 255, 0.1);
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+  border-radius: 50px;
+  padding: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.searchInputContainer {
+  display: flex;
+  align-items: center;
+}
+
+.searchInputWrapper {
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 40px;
+  padding: 8px 16px;
+  gap: 12px;
+  min-width: 300px;
+  transition: all 0.3s ease;
+}
+
+.searchInputWrapper:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.searchInput {
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 16px;
+  outline: none;
+  flex: 1;
+  min-width: 200px;
+}
+
+.searchInput::placeholder {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.chatInputIcon {
+  color: white;
+  opacity: 0.8;
+}
+
+.searchButton {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.searchButton:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(1.05);
+}
+
+.searchButton svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Popup do Chatbot */
+.chatbotPopupOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100svh;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  overflow: hidden;
+  overscroll-behavior: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Em desktop, quando o chat está aberto, posicionar à direita */
+@media (min-width: 1024px) {
+  .chatbotOpen .chatbotPopupOverlay {
+    width: 70vw;
+    left: 30vw;
+    justify-content: flex-start;
+  }
+}
+
+.fullscreenPopup {
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  border-radius: 0;
+}
+
+.chatbotPopup {
+  width: 90%;
+  max-width: 800px;
+  height: 80%;
+  max-height: 600px;
+  background: rgba(0, 0, 0, 0.1);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  overflow: hidden;
+  animation: popIn 0.3s ease-out forwards, liquidGlow 3s ease-in-out infinite;
+  transform-origin: center;
+  position: relative;
+  z-index: 10001;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Em desktop, quando o chat está aberto, ocupar toda a área disponível */
+@media (min-width: 1024px) {
+  .chatbotOpen .chatbotPopup {
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    max-height: none;
+    border-radius: 0;
+    margin: 0;
+  }
+}
+
+.chatbotPopup::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.3);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  filter: blur(2px);
+  z-index: -1;
+}
+
+/* Em desktop, quando o chat está aberto, remover bordos arredondados */
+@media (min-width: 1024px) {
+  .chatbotOpen .chatbotPopup::before {
+    border-radius: 0;
+  }
+}
+
+@keyframes popIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.chatbotHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.6);
+  -webkit-backdrop-filter: blur(15px);
+  backdrop-filter: blur(15px);
+  color: white;
+  padding: 20px 24px;
+  border-radius: 20px 20px 0 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Em desktop, quando o chat está aberto, remover bordos arredondados */
+@media (min-width: 1024px) {
+  .chatbotOpen .chatbotHeader {
+    border-radius: 0;
+  }
+}
+
+.chatbotHeaderTitle {
+  flex: 1;
+}
+
+.chatbotHeaderTitle h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.chatbotHeaderSubtitle {
+  margin: 4px 0 0 0;
+  font-size: 14px;
+  opacity: 0.9;
+  font-weight: 500;
+}
+
+.backButton {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.backButton:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateY(-1px);
+}
+
+.backButton span {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.chatbotContent {
+  flex: 1;
+  padding: 24px;
+  overflow-y: auto;
+  background: rgba(0, 0, 0, 0.3);
+  -webkit-backdrop-filter: blur(5px);
+  backdrop-filter: blur(5px);
+}
+
+.chatbotWelcome {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.chatbotWelcome h3 {
+  color: #333;
+  font-size: 24px;
+  font-weight: 700;
+  margin: 0 0 8px 0;
+}
+
+.chatbotSubtitle {
+  color: #666;
+  font-size: 16px;
+  font-weight: 500;
+  margin: 0 0 24px 0;
+}
+
+.glassmorphismBox {
+  background: rgba(0, 0, 0, 0.4);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  padding: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+.chatbotInstructions {
+  color: rgba(255, 255, 255, 0.95);
+  font-size: 16px;
+  line-height: 1.6;
+  margin: 0;
+  text-align: left;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.chatbotInstructions p {
+  margin: 0 0 16px 0;
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+.chatbotInstructions p:last-of-type {
+  margin-bottom: 20px;
+}
+
+.chatbotMessages {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.chatbotUserMessage {
+  align-self: flex-end;
+  max-width: 80%;
+}
+
+.chatbotBotMessage {
+  align-self: flex-start;
+  max-width: 80%;
+}
+
+.messageContent {
+  padding: 12px 16px;
+  border-radius: 16px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.chatbotUserMessage .messageContent {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-bottom-right-radius: 4px;
+}
+
+.chatbotBotMessage .messageContent {
+  background: rgba(0, 0, 0, 0.4);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  color: rgba(255, 255, 255, 1);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-bottom-left-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.chatbotInputBar {
+  background: rgba(0, 0, 0, 0.3);
+  -webkit-backdrop-filter: blur(5px);
+  backdrop-filter: blur(5px);
+  padding: 20px 24px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0 0 20px 20px;
+}
+
+/* Em desktop, quando o chat está aberto, remover bordos arredondados */
+@media (min-width: 1024px) {
+  .chatbotOpen .chatbotInputBar {
+    border-radius: 0;
+  }
+}
+
+.chatbotForm {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.chatbotInput {
+  flex: 1;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 25px;
+  padding: 12px 20px;
+  font-size: 16px;
+  outline: none;
+  transition: all 0.2s ease;
+  background: rgba(0, 0, 0, 0.4);
+  -webkit-backdrop-filter: blur(15px);
+  backdrop-filter: blur(15px);
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.chatbotInput:focus {
+  border-color: rgba(255, 255, 255, 0.6);
+  background: rgba(0, 0, 0, 0.6);
+  box-shadow: 
+    0 4px 16px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    0 0 0 3px rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+}
+
+.chatbotInput::placeholder {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.chatbotSendButton {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.chatbotSendButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+.chatbotSendButton svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Formulário de dados pessoais */
+.guidePopupOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100svh;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3000;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  overflow: hidden;
+  overscroll-behavior: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.guidePopupOverlay ~ * {
+  overflow: hidden !important;
+}
+
+.guidePopup {
+  width: 90%;
+  max-width: 450px;
+  background: rgba(52, 52, 52, 0.1);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  overflow: hidden;
+  animation: popIn 0.3s ease-out forwards, liquidGlow 3s ease-in-out infinite;
+  transform-origin: center;
+  position: relative;
+  z-index: 3001;
+}
+
+.guidePopup::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.3);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  filter: blur(2px);
+  z-index: -1;
+}
+
+@keyframes popIn {
+  from { 
+    transform: scale(0.9) translateY(20px); 
+    opacity: 0; 
+  }
+  to { 
+    transform: scale(1) translateY(0); 
+    opacity: 1; 
+  }
+}
+
+@keyframes liquidGlow {
+  0%, 100% {
+    box-shadow: 
+      0 8px 32px rgba(0, 0, 0, 0.1),
+      inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  }
+  50% {
+    box-shadow: 
+      0 12px 40px rgba(0, 0, 0, 0.15),
+      inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  }
+}
+
+.guidePopupHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.6);
+  -webkit-backdrop-filter: blur(15px);
+  backdrop-filter: blur(15px);
+  color: white;
+  padding: 16px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.guidePopupHeader h3 {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.closeButton {
+  background: transparent;
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.closeButton:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.guidePopupContent {
+  padding: 20px;
+  color: rgba(255, 255, 255, 0.9);
+  background: rgba(0, 0, 0, 0.3);
+  -webkit-backdrop-filter: blur(5px);
+  backdrop-filter: blur(5px);
+}
+
+.guidePopupContent p {
+  margin: 0 0 20px 0;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.95);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.guideForm {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.formField {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-transform: uppercase!important;
+}
+
+.formField label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.95);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  margin-bottom: 4px;
+}
+
+.formField input, .formField textarea {
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  font-size: 1rem;
+  background: rgba(0, 0, 0, 0.4);
+  -webkit-backdrop-filter: blur(15px);
+  backdrop-filter: blur(15px);
+  color: rgba(255, 255, 255, 0.95);
+  transition: all 0.3s ease;
+  box-shadow: 
+    0 2px 8px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.formField input:hover, .formField textarea:hover {
+  background: rgba(0, 0, 0, 0.5);
+  border-color: rgba(255, 255, 255, 0.4);
+  box-shadow: 
+    0 4px 12px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.formField input::placeholder, .formField textarea::placeholder {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.formField input:focus, .formField textarea:focus {
+  outline: none;
+  border-color: rgba(255, 255, 255, 0.6);
+  background: rgba(0, 0, 0, 0.6);
+  box-shadow: 
+    0 4px 16px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    0 0 0 3px rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+}
+
+.formField textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+
+.formError {
+  background: rgba(255, 0, 0, 0.1);
+  -webkit-backdrop-filter: blur(15px);
+  backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 0, 0, 0.3);
+  color: #ff6b6b;
+  padding: 12px 16px;
+  border-radius: 12px;
+  margin-bottom: 16px;
+  font-size: 0.9rem;
+  text-align: center;
+  width: 100%;
+  box-shadow: 
+    0 2px 8px rgba(255, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.formSuccess {
+  background: rgba(156, 39, 176, 0.1);
+  -webkit-backdrop-filter: blur(15px);
+  backdrop-filter: blur(15px);
+  border: 1px solid rgba(156, 39, 176, 0.3);
+  color: #9c27b0;
+  padding: 20px;
+  border-radius: 12px;
+  margin-top: 10px;
+  text-align: center;
+  box-shadow: 
+    0 2px 8px rgba(156, 39, 176, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.formSuccess p {
+  margin: 8px 0;
+  font-size: 1rem;
+}
+
+.formSuccess p:first-child {
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.guideSubmitButton {
+  margin-top: 10px;
+  padding: 14px 24px;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1));
+  -webkit-backdrop-filter: blur(15px);
+  backdrop-filter: blur(15px);
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 
+    0 4px 16px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    text-transform: uppercase!important;
+}
+
+.guideSubmitButton:hover {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.2));
+  transform: translateY(-2px);
+  box-shadow: 
+    0 8px 24px rgba(0, 0, 0, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.guideSubmitButton:disabled {
+  background: rgba(255, 255, 255, 0.05);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+  color: rgba(255, 255, 255, 0.4);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Estados do chatbot */
+.chatbotOpen .searchInputContainer {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  /* Em dispositivos móveis, manter o comportamento atual */
+  .chatbotOpen .chatbotPopupOverlay {
+    width: 100vw;
+    left: 0;
+    justify-content: center;
+  }
+  
+  .chatbotOpen .chatbotPopup {
+    width: 100%;
+    height: 100%;
+    border-radius: 0;
+    max-width: none;
+    max-height: none;
+  }
+  
+  .guidePopup {
+    width: 95%;
+    max-width: none;
+    border-radius: 16px;
+  }
+  
+  .guidePopupHeader {
+    padding: 14px 16px;
+  }
+  
+  .guidePopupHeader h3 {
+    font-size: 1.1rem;
+  }
+  
+  .guidePopupContent {
+    padding: 16px;
+  }
+  
+  .formField input, .formField textarea {
+    padding: 10px 14px;
+    border-radius: 10px;
+  }
+  
+  .guideSubmitButton {
+    padding: 12px 20px;
+    border-radius: 10px;
+  }
+
+
+  
+
+  
+  .glassmorphismControlBar {
+    bottom: 60px;
+    left: 20px;
+    right: 20px;
+    transform: none;
+  }
+  
+  .searchInputWrapper {
+    min-width: auto;
+    width: 100%;
+  }
+  
+  .searchInput {
+    min-width: auto;
+  }
+  
+  .chatbotPopup {
+    width: 100%;
+    height: 100%;
+    border-radius: 0;
+    max-width: none;
+    max-height: none;
+  }
+  
+  .chatbotHeader {
+    border-radius: 0;
+    padding: 16px 20px;
+  }
+  
+  .chatbotHeaderTitle h3 {
+    font-size: 16px;
+  }
+  
+  .chatbotHeaderSubtitle {
+    font-size: 12px;
+  }
+  
+  .chatbotContent {
+    padding: 16px;
+  }
+  
+  .chatbotWelcome h3 {
+    font-size: 20px;
+  }
+  
+  .chatbotSubtitle {
+    font-size: 14px;
+  }
+  
+  .glassmorphismBox {
+    padding: 16px;
+  }
+  
+  .chatbotInstructions {
+    font-size: 14px;
+  }
+  
+  .chatbotInputBar {
+    padding: 16px 20px;
+    border-radius: 0;
+  }
+  
+  .chatbotInput {
+    font-size: 14px;
+    padding: 10px 16px;
+  }
+  
+  .chatbotSendButton {
+    width: 44px;
+    height: 44px;
+  }
+  
+  .chatbotSendButton svg {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+/* Estilos responsivos para o loader */
+@media (max-width: 768px) {
+  .loadingContent {
+    padding: 30px 20px;
+    max-width: 90%;
+  }
+  
+  .loadingLogo {
+    width: 100px;
+    height: 100px;
+    margin-bottom: 25px;
+  }
+  
+  .loadingTitle {
+    font-size: 16px;
+    margin-bottom: 25px;
+  }
+}
+
+@media (max-width: 480px) {
+  .loadingContent {
+    padding: 25px 15px;
+  }
+  
+  .loadingLogo {
+    width: 80px;
+    height: 80px;
+    margin-bottom: 20px;
+  }
+  
+  .loadingTitle {
+    font-size: 14px;
+    margin-bottom: 20px;
+  }
+  
+  .loadingProgressText {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Em dispositivos muito pequenos, manter o comportamento atual */
+  .chatbotOpen .chatbotPopupOverlay {
+    width: 100vw;
+    left: 0;
+    justify-content: center;
+  }
+  
+  .guidePopup {
+    width: 98%;
+    margin: 10px;
+    border-radius: 14px;
+  }
+  
+  .guidePopupHeader {
+    padding: 12px 14px;
+  }
+  
+  .guidePopupHeader h3 {
+    font-size: 1rem;
+    text-transform: uppercase;
+  }
+  
+  .guidePopupContent {
+    padding: 14px;
+  }
+  
+  .guideForm {
+    gap: 12px;
+  }
+  
+  .formField input, .formField textarea {
+    padding: 8px 12px;
+    font-size: 0.9rem;
+    border-radius: 8px;
+  }
+  
+  .guideSubmitButton {
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+  }
+
+
+  
+  .glassmorphismControlBar {
+    bottom: 120px;
+    left: 10px;
+    right: 10px;
+  }
+  
+  .searchInputWrapper {
+    padding: 6px 12px;
+  }
+  
+  .searchInput {
+    font-size: 14px;
+  }
+  
+  .chatbotHeader {
+    padding: 12px 16px;
+  }
+  
+  .chatbotHeaderTitle h3 {
+    font-size: 14px;
+  }
+  
+  .chatbotHeaderSubtitle {
+    font-size: 11px;
+  }
+  
+  .backButton {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+  
+  .chatbotContent {
+    padding: 12px;
+  }
+  
+  .chatbotWelcome h3 {
+    font-size: 18px;
+  }
+  
+  .chatbotSubtitle {
+    font-size: 13px;
+  }
+  
+  .glassmorphismBox {
+    padding: 12px;
+  }
+  
+  .chatbotInstructions {
+    font-size: 13px;
+  }
+  
+  .chatbotInputBar {
+    padding: 12px 16px;
+  }
+  
+  .chatbotInput {
+    font-size: 13px;
+    padding: 8px 12px;
+  }
+  
+  .chatbotSendButton {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .chatbotSendButton svg {
+    width: 16px;
+    height: 16px;
+  }
+}

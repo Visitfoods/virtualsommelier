@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_2" data-name="Layer 2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 776.56 679.22">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #fff;
+        fill-rule: evenodd;
+        stroke-width: 0px;
+      }
+    </style>
+  </defs>
+  <g id="Layer_1-2" data-name="Layer 1">
+    <g id="Page-1">
+      <g id="Icon-Set-Filled">
+        <path id="rewind" class="cls-1" d="m717.9,9.22l-232.82,167.25V47.57c-.02-56.51-31.32-53.02-58.64-38.35L14.22,305.34c-18.96,19.34-18.96,50.67,0,69.99l412.22,296.12c25.04,16.22,58.62,8.29,58.64-39.88v-127.39l232.82,167.27c25.04,16.22,57.87,9.04,58.64-40.63V49.12c.75-55.03-31.32-54.57-58.64-39.9"/>
+      </g>
+    </g>
+  </g>
+</svg>

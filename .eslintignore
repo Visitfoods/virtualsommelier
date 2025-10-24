@@ -1,0 +1,11 @@
+src/app/[guideSlug]/__pp_copy/page.tsx
+src/app/[guideSlug]/__pp_copy/chatIntegration.tsx
+src/app/backoffice/conversations/page.tsx
+src/app/backoffice/page.tsx
+src/app/backoffice/select/page.tsx
+src/app/backoffice/users/page.tsx
+src/firebase/guideServices.ts
+src/firebase/userServices.ts
+src/services/sessionService.ts
+src/types/session.ts
+
