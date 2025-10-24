@@ -5736,7 +5736,7 @@ export default function Home({ guideVideos, guideSlug }: { guideVideos: GuideVid
                 return <Image src={src} alt="Ícone da Empresa" width={80} height={80} style={{ borderRadius: '50%' }} />;
               })()}
             </div>
-            <h2 className={styles.loadingTitle}>Estamos a iniciar o Virtual Chat</h2>
+            <h2 className={styles.loadingTitle}>Estamos a preparar o seu Virtual Sommelier</h2>
             <div className={styles.loadingProgressContainer}>
               <div className={styles.loadingProgressBar}>
                 <div 

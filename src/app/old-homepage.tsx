@@ -607,7 +607,7 @@ Always Respond in European Portuguese
                 style={{ width: 80, height: 80, borderRadius: '50%', objectFit: 'cover' }}
               />
             </div>
-            <h2 className={styles.loadingTitle}>Estamos a iniciar o Virtual Chat</h2>
+            <h2 className={styles.loadingTitle}>Estamos a preparar o seu Virtual Sommelier</h2>
             <div className={styles.loadingProgressContainer}>
               <div className={styles.loadingProgressBar}>
                 <div 
