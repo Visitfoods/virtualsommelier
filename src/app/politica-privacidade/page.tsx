@@ -17,8 +17,8 @@ export default function PoliticaPrivacidade() {
   function getInterfaceTexts() {
     const texts = {
       'pt': {
-        title: 'Política de Privacidade – VirtualChat',
-        intro1: 'O VirtualChat é propriedade da empresa Inovpartner. A Inovpartner é uma empresa de tecnologia da informação e inteligência artificial, com sede em Rua Álvaro Pires Miranda, nº 270-B, 2415-369 Marrazes, Leiria, Portugal, NIF 514877731, compromete-se a proteger a privacidade dos utilizadores do seu website e a garantir a confidencialidade dos dados pessoais recolhidos.',
+        title: 'Política de Privacidade – Virtual Sommelier',
+        intro1: 'O Virtual Sommelier é propriedade da empresa Inovpartner. A Inovpartner é uma empresa de tecnologia da informação e inteligência artificial, com sede em Rua Álvaro Pires Miranda, nº 270-B, 2415-369 Marrazes, Leiria, Portugal, NIF 514877731, compromete-se a proteger a privacidade dos utilizadores do seu website e a garantir a confidencialidade dos dados pessoais recolhidos.',
         intro2: 'Esta Política de Privacidade explica como recolhemos, utilizamos, armazenamos e protegemos os dados pessoais dos utilizadores, em conformidade com o Regulamento Geral sobre a Proteção de Dados (RGPD) e demais legislação aplicável.',
         section1Title: '1. Dados recolhidos',
         section1Text: 'Podemos recolher as seguintes categorias de dados:',
@@ -37,7 +37,7 @@ export default function PoliticaPrivacidade() {
         section3Text: 'O tratamento dos dados é realizado com base em:',
         section3Item1: 'Consentimento do utilizador.',
         section3Item2: 'Execução de contrato ou prestação de serviços.',
-        section3Item3: 'Interesse legítimo da VirtualChat (por ex.: segurança da plataforma, prevenção de abusos).',
+        section3Item3: 'Interesse legítimo da Virtual Sommelier (por ex.: segurança da plataforma, prevenção de abusos).',
         section4Title: '4. Partilha de dados',
         section4Text: 'Os dados podem ser partilhados com:',
         section4Item1: 'Prestadores de serviços tecnológicos (ex.: alojamento, fornecedores de API de IA).',
@@ -74,14 +74,14 @@ export default function PoliticaPrivacidade() {
         contactAddress1: 'Rua Álvaro Pires Miranda, nº 270-B',
         contactAddress2: '2415-369 Marrazes – Leiria – Portugal',
         contactNif: 'NIF: 514877731',
-        backButton: '← Voltar ao VirtualChat',
+        backButton: '← Voltar ao Virtual Sommelier',
         complaintsBook: 'Livro de Reclamações',
         privacyPolicy: 'Política de Privacidade',
         copyright: '© Inov Partner Todos os direitos reservados.'
       },
       'en': {
-        title: 'Privacy Policy – VirtualChat',
-        intro1: 'VirtualChat is owned by Inovpartner. Inovpartner is an information technology and artificial intelligence company, headquartered at Rua Álvaro Pires Miranda, nº 270-B, 2415-369 Marrazes, Leiria, Portugal, NIF 514877731, is committed to protecting the privacy of users of its website and ensuring the confidentiality of personal data collected.',
+        title: 'Privacy Policy – Virtual Sommelier',
+        intro1: 'Virtual Sommelier is owned by Inovpartner. Inovpartner is an information technology and artificial intelligence company, headquartered at Rua Álvaro Pires Miranda, nº 270-B, 2415-369 Marrazes, Leiria, Portugal, NIF 514877731, is committed to protecting the privacy of users of its website and ensuring the confidentiality of personal data collected.',
         intro2: 'This Privacy Policy explains how we collect, use, store and protect users\' personal data, in compliance with the General Data Protection Regulation (GDPR) and other applicable legislation.',
         section1Title: '1. Data collected',
         section1Text: 'We may collect the following categories of data:',
@@ -100,7 +100,7 @@ export default function PoliticaPrivacidade() {
         section3Text: 'Data processing is carried out based on:',
         section3Item1: 'User consent.',
         section3Item2: 'Contract execution or service provision.',
-        section3Item3: 'Legitimate interest of VirtualChat (e.g.: platform security, abuse prevention).',
+        section3Item3: 'Legitimate interest of Virtual Sommelier (e.g.: platform security, abuse prevention).',
         section4Title: '4. Data sharing',
         section4Text: 'Data may be shared with:',
         section4Item1: 'Technology service providers (e.g.: hosting, AI API providers).',
@@ -137,14 +137,14 @@ export default function PoliticaPrivacidade() {
         contactAddress1: 'Rua Álvaro Pires Miranda, nº 270-B',
         contactAddress2: '2415-369 Marrazes – Leiria – Portugal',
         contactNif: 'NIF: 514877731',
-        backButton: '← Back to VirtualChat',
+        backButton: '← Back to Virtual Sommelier',
         complaintsBook: 'Complaints Book',
         privacyPolicy: 'Privacy Policy',
         copyright: '© Inov Partner All rights reserved.'
       },
       'es': {
-        title: 'Política de Privacidad – VirtualChat',
-        intro1: 'VirtualChat es propiedad de Inovpartner. Inovpartner es una empresa de tecnología de la información e inteligencia artificial, con sede en Rua Álvaro Pires Miranda, nº 270-B, 2415-369 Marrazes, Leiria, Portugal, NIF 514877731, se compromete a proteger la privacidad de los usuarios de su sitio web y garantizar la confidencialidad de los datos personales recopilados.',
+        title: 'Política de Privacidad – Virtual Sommelier',
+        intro1: 'Virtual Sommelier es propiedad de Inovpartner. Inovpartner es una empresa de tecnología de la información e inteligencia artificial, con sede en Rua Álvaro Pires Miranda, nº 270-B, 2415-369 Marrazes, Leiria, Portugal, NIF 514877731, se compromete a proteger la privacidad de los usuarios de su sitio web y garantizar la confidencialidad de los datos personales recopilados.',
         intro2: 'Esta Política de Privacidad explica cómo recopilamos, utilizamos, almacenamos y protegemos los datos personales de los usuarios, en cumplimiento del Reglamento General de Protección de Datos (RGPD) y demás legislación aplicable.',
         section1Title: '1. Datos recopilados',
         section1Text: 'Podemos recopilar las siguientes categorías de datos:',
@@ -163,7 +163,7 @@ export default function PoliticaPrivacidade() {
         section3Text: 'El tratamiento de datos se realiza con base en:',
         section3Item1: 'Consentimiento del usuario.',
         section3Item2: 'Ejecución de contrato o prestación de servicios.',
-        section3Item3: 'Interés legítimo de VirtualChat (ej.: seguridad de la plataforma, prevención de abusos).',
+        section3Item3: 'Interés legítimo de Virtual Sommelier (ej.: seguridad de la plataforma, prevención de abusos).',
         section4Title: '4. Compartir datos',
         section4Text: 'Los datos pueden ser compartidos con:',
         section4Item1: 'Proveedores de servicios tecnológicos (ej.: hosting, proveedores de API de IA).',
@@ -200,14 +200,14 @@ export default function PoliticaPrivacidade() {
         contactAddress1: 'Rua Álvaro Pires Miranda, nº 270-B',
         contactAddress2: '2415-369 Marrazes – Leiria – Portugal',
         contactNif: 'NIF: 514877731',
-        backButton: '← Volver a VirtualChat',
+        backButton: '← Volver a Virtual Sommelier',
         complaintsBook: 'Libro de Reclamaciones',
         privacyPolicy: 'Política de Privacidad',
         copyright: '© Inov Partner Todos los derechos reservados.'
       },
       'fr': {
-        title: 'Politique de Confidentialité – VirtualChat',
-        intro1: 'VirtualChat appartient à Inovpartner. Inovpartner est une entreprise de technologie de l\'information et d\'intelligence artificielle, basée à Rua Álvaro Pires Miranda, nº 270-B, 2415-369 Marrazes, Leiria, Portugal, NIF 514877731, s\'engage à protéger la vie privée des utilisateurs de son site web et à garantir la confidentialité des données personnelles collectées.',
+        title: 'Politique de Confidentialité – Virtual Sommelier',
+        intro1: 'Virtual Sommelier appartient à Inovpartner. Inovpartner est une entreprise de technologie de l\'information et d\'intelligence artificielle, basée à Rua Álvaro Pires Miranda, nº 270-B, 2415-369 Marrazes, Leiria, Portugal, NIF 514877731, s\'engage à protéger la vie privée des utilisateurs de son site web et à garantir la confidentialité des données personnelles collectées.',
         intro2: 'Cette Politique de Confidentialité explique comment nous collectons, utilisons, stockons et protégeons les données personnelles des utilisateurs, en conformité avec le Règlement Général sur la Protection des Données (RGPD) et autres législations applicables.',
         section1Title: '1. Données collectées',
         section1Text: 'Nous pouvons collecter les catégories de données suivantes :',
@@ -226,7 +226,7 @@ export default function PoliticaPrivacidade() {
         section3Text: 'Le traitement des données est effectué sur la base de :',
         section3Item1: 'Le consentement de l\'utilisateur.',
         section3Item2: 'L\'exécution de contrat ou la prestation de services.',
-        section3Item3: 'L\'intérêt légitime de VirtualChat (ex. : sécurité de la plateforme, prévention des abus).',
+        section3Item3: 'L\'intérêt légitime de Virtual Sommelier (ex. : sécurité de la plateforme, prévention des abus).',
         section4Title: '4. Partage de données',
         section4Text: 'Les données peuvent être partagées avec :',
         section4Item1: 'Des prestataires de services technologiques (ex. : hébergement, fournisseurs d\'API d\'IA).',
@@ -263,7 +263,7 @@ export default function PoliticaPrivacidade() {
         contactAddress1: 'Rua Álvaro Pires Miranda, nº 270-B',
         contactAddress2: '2415-369 Marrazes – Leiria – Portugal',
         contactNif: 'NIF: 514877731',
-        backButton: '← Retour à VirtualChat',
+        backButton: '← Retour à Virtual Sommelier',
         complaintsBook: 'Livre de Réclamations',
         privacyPolicy: 'Politique de Confidentialité',
         copyright: '© Inov Partner Tous droits réservés.'
@@ -360,7 +360,7 @@ export default function PoliticaPrivacidade() {
             <li>{texts.section7Item4}</li>
             <li>{texts.section7Item5}</li>
           </ul>
-          <p>{texts.section7Text2} <a href="mailto:geral@virtualguide.info" className={styles.link}>geral@virtualguide.info</a> {texts.section7Text3} <a href="tel:+351915700200" className={styles.link}>+351 915 700 200</a>.</p>
+          <p>{texts.section7Text2} <a href="mailto:geral@virtualsommelier.info" className={styles.link}>geral@virtualsommelier.info</a> {texts.section7Text3} <a href="tel:+351915700200" className={styles.link}>+351 915 700 200</a>.</p>
         </section>
 
         <section className={styles.section}>
@@ -385,7 +385,7 @@ export default function PoliticaPrivacidade() {
             <p><strong>{texts.contactCompany}</strong></p>
             <p>{texts.contactAddress1}</p>
             <p>{texts.contactAddress2}</p>
-            <p><a href="mailto:geral@virtualguide.info" className={styles.link}>geral@virtualguide.info</a></p>
+            <p><a href="mailto:geral@virtualsommelier.info" className={styles.link}>geral@virtualsommelier.info</a></p>
             <p><a href="tel:+351915700200" className={styles.link}>+351 915 700 200</a></p>
             <p>{texts.contactNif}</p>
           </div>
