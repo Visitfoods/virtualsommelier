@@ -6,8 +6,8 @@
   "background_color": "#ffffff",
   "theme_color": "#ffffff",
   "icons": [
-    { "src": "/faviconvirtualsommelier.jpg", "sizes": "192x192", "type": "image/jpeg" },
-    { "src": "/faviconvirtualsommelier.jpg", "sizes": "512x512", "type": "image/jpeg" }
+    { "src": "/imagemmanifest.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/imagemmanifest.png", "sizes": "512x512", "type": "image/png" }
   ]
 }
 

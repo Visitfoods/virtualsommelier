@@ -8,7 +8,7 @@ const nodemailer = require('nodemailer');
 
 export const runtime = 'nodejs';
 
-const CENTRAL_NOTIFICATIONS_EMAIL = 'notificacoes@inovpartner.com';
+const CENTRAL_NOTIFICATIONS_EMAIL = 'geral@virtualsommelier.info';
 
 const createTransporter = () => {
   const portFromEnv = parseInt(process.env.SMTP_PORT || '587');
@@ -83,7 +83,7 @@ export async function POST(request: NextRequest) {
     `;
 
     await transporter.sendMail({
-      from: { name: 'Virtual Chat', address: process.env.SMTP_USER },
+      from: { name: 'Virtual Sommelier', address: process.env.SMTP_USER },
       to: CENTRAL_NOTIFICATIONS_EMAIL,
       cc: forwardEmail || undefined,
       subject,
