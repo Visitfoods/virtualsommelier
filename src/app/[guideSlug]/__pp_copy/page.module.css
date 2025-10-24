@@ -2761,7 +2761,7 @@ a.secondary {
 
 .chatbotWelcome h3 {
   margin: 0 0 8px 0;
-  font-size: 2rem;
+  font-size: 1.5rem;
   font-weight: 700;
   color: #333;
   text-align: left;
@@ -3744,7 +3744,7 @@ a.secondary {
   }
   
   .chatbotHeaderTitle h3 {
-    font-size: 0.8rem;
+    font-size: 0.77rem;
   }
 
   .chatbotHeaderSubtitle {
