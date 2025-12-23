@@ -34,7 +34,7 @@
     "jsonwebtoken": "^9.0.2",
     "lowdb": "^7.0.1",
     "lru-cache": "^11.1.0",
-    "next": "15.4.4",
+    "next": "15.4.10",
     "nodemailer": "^7.0.9",
     "openai": "^5.15.0",
     "react": "19.1.0",
