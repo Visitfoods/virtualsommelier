@@ -148,13 +148,36 @@ export async function uploadVideoWithProvider(
       });
       
       // Para Bunny Stream, extrair o videoId da URL
-      // URL formato: https://vz-42532543-0c8.b-cdn.net/{videoId}/play_720p.mp4
-      const urlParts = path.split('/');
-      // O videoId é o penúltimo elemento (antes de play_720p.mp4)
-      fileName = urlParts[urlParts.length - 2] || '';
+      // Dois formatos possíveis:
+      // 1. CDN: https://vz-42532543-0c8.b-cdn.net/{videoId}/play_720p.mp4 (ou playlist.m3u8)
+      // 2. Embed (fallback): https://iframe.mediadelivery.net/embed/{libraryId}/{videoId}?autoplay=...
       
-      console.log('🆔 [UPLOAD] videoId extraído para fileName:', fileName);
+      if (path.includes('iframe.mediadelivery.net/embed/')) {
+        // Formato embed: extrair videoId do último segmento (remover query string)
+        const urlParts = path.split('?')[0].split('/'); // Remover query primeiro
+        fileName = urlParts[urlParts.length - 1] || '';
+        console.log('🆔 [UPLOAD] videoId extraído de URL embed:', fileName);
+      } else if (path.includes('b-cdn.net')) {
+        // Formato CDN: videoId é o segmento antes de /play_ ou /playlist
+        const urlParts = path.split('/');
+        // Procurar o segmento que vem antes de play_ ou playlist
+        const playIndex = urlParts.findIndex(part => part.startsWith('play_') || part.startsWith('playlist'));
+        if (playIndex > 0) {
+          fileName = urlParts[playIndex - 1] || '';
+        } else {
+          // Fallback: penúltimo elemento
+          fileName = urlParts[urlParts.length - 2] || '';
+        }
+        console.log('🆔 [UPLOAD] videoId extraído de URL CDN:', fileName);
+      } else {
+        // Formato desconhecido, tentar extrair penúltimo elemento
+        const urlParts = path.split('/');
+        fileName = urlParts[urlParts.length - 2] || '';
+        console.warn('⚠️ [UPLOAD] Formato de URL desconhecido, usando fallback:', fileName);
+      }
+      
       console.log('🔗 [UPLOAD] path completo:', path);
+      console.log('✅ [UPLOAD] fileName final para Firebase:', fileName);
     } else {
       // Upload para Cloudflare Stream (padrão)
       path = await uploadVideoDirect(file, guideSlug, fileType, onProgress);

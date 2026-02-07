@@ -4,7 +4,7 @@ const nextConfig: NextConfig = {
   // Evitar repassar variáveis env manualmente; o Next já expõe NEXT_PUBLIC_ automaticamente
   // Removido bloco env para reduzir risco de exposição indevida
   
-  // Remover logs de console em produção (mantém apenas errors)
+  //Remover logs de console em produção (mantém apenas errors)
   compiler: {
     removeConsole: { exclude: ['error'] }
   },

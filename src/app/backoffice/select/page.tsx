@@ -1235,6 +1235,7 @@ export default function SelectDataSource() {
           });
         finalBackgroundURL = backgroundResult.path;
         console.log('📦 [EDIÇÃO] URL retornado do upload (backgroundResult.path):', finalBackgroundURL);
+        console.log('🆔 [EDIÇÃO] fileName retornado:', backgroundResult.fileName);
         console.log('🏷️ [EDIÇÃO] Provider:', videoProvider);
       }
       if (mobileTabletBackgroundVideoFile) {
@@ -1243,6 +1244,7 @@ export default function SelectDataSource() {
             setMobileTabletBackgroundUploadProgress(progress.percentage);
           });
         finalMobileTabletBackgroundURL = mobileTabletBackgroundResult.path;
+        console.log('📦 [EDIÇÃO] URL mobileTablet retornado:', finalMobileTabletBackgroundURL);
       }
       if (welcomeVideoFile) {
         console.log('🎬 [EDIÇÃO] Iniciando upload de vídeo welcome com provider:', videoProvider);
@@ -1252,6 +1254,7 @@ export default function SelectDataSource() {
           });
         finalWelcomeURL = welcomeResult.path;
         console.log('📦 [EDIÇÃO] URL retornado do upload welcome (welcomeResult.path):', finalWelcomeURL);
+        console.log('🆔 [EDIÇÃO] fileName welcome retornado:', welcomeResult.fileName);
       }
       if (chatIconFile) {
         setChatIconUploadProgress(50);
@@ -1402,6 +1405,15 @@ export default function SelectDataSource() {
         welcomeVideoURL: updatePayload.welcomeVideoURL,
         videoProvider: updatePayload.videoProvider
       });
+      
+      console.log('🔍 [DEBUG] Valores finais ANTES de guardar:', {
+        finalBackgroundURL,
+        finalWelcomeURL,
+        videoProvider,
+        backgroundVideoFile: !!backgroundVideoFile,
+        welcomeVideoFile: !!welcomeVideoFile
+      });
+      
       await setDoc(doc(db, 'guides', editingGuide.slug), updatePayload, { merge: true });
       // Forçar persistência explícita dos campos novos mesmo que o merge não os escreva por algum motivo
       await updateDoc(doc(db, 'guides', editingGuide.slug), {
@@ -1409,6 +1421,17 @@ export default function SelectDataSource() {
         quickAreaImageURL: quickAreaImageUrl || '',
         quickAreaImageLink: quickAreaImageLink || '',
         quickButtonsDisabled: !!disableQuickButtons,
+        // Forçar atualização dos vídeos também
+        backgroundVideoURL: finalBackgroundURL,
+        welcomeVideoURL: finalWelcomeURL,
+        mobileTabletBackgroundVideoURL: finalMobileTabletBackgroundURL,
+        videoProvider: videoProvider,
+      });
+      
+      console.log('✅ updateDoc executado com os valores:', {
+        backgroundVideoURL: finalBackgroundURL,
+        welcomeVideoURL: finalWelcomeURL,
+        videoProvider: videoProvider
       });
       
       console.log('✅ Dados guardados no Firebase com sucesso!');
@@ -1433,6 +1456,21 @@ export default function SelectDataSource() {
       // setShowCreateGuideModal(false);
       // setIsEditMode(false);
       // setEditingGuide(null);
+
+      // Atualizar existingAssets com os novos valores para evitar sobrescrever com URLs antigos
+      setExistingAssets({
+        background: finalBackgroundURL,
+        mobileTabletBackground: finalMobileTabletBackgroundURL,
+        welcome: finalWelcomeURL,
+        chatIcon: finalChatIconURL,
+        companyIcon: finalCompanyIconURL,
+        captions: {
+          desktop: finalCaptionsDesktopURL,
+          tablet: finalCaptionsTabletURL,
+          mobile: finalCaptionsMobileURL
+        },
+        captionsByLang: finalCaptionsByLang
+      });
 
       // Limpar os campos de upload
       setBackgroundVideoFile(null);
