@@ -383,6 +383,45 @@ function deleteCookie(name: string) {
   document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/`;
 }
 
+// Preferências de cookies (personalização)
+export type CookiePreferences = {
+  necessary: boolean;
+  analytics: boolean;
+  marketing: boolean;
+  functional: boolean;
+};
+
+const DEFAULT_COOKIE_PREFERENCES: CookiePreferences = {
+  necessary: true,
+  analytics: false,
+  marketing: false,
+  functional: false,
+};
+
+function loadCookiePreferences(): CookiePreferences {
+  if (typeof window === 'undefined') return DEFAULT_COOKIE_PREFERENCES;
+  try {
+    const raw = localStorage.getItem('cookieConsent');
+    if (!raw) return DEFAULT_COOKIE_PREFERENCES;
+    if (raw === 'accepted') return { necessary: true, analytics: true, marketing: true, functional: true };
+    if (raw === 'declined') return { ...DEFAULT_COOKIE_PREFERENCES };
+    const parsed = JSON.parse(raw) as Partial<CookiePreferences>;
+    return {
+      necessary: parsed.necessary !== false,
+      analytics: !!parsed.analytics,
+      marketing: !!parsed.marketing,
+      functional: !!parsed.functional,
+    };
+  } catch {
+    return DEFAULT_COOKIE_PREFERENCES;
+  }
+}
+
+function saveCookiePreferences(prefs: CookiePreferences): void {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem('cookieConsent', JSON.stringify(prefs));
+}
+
 // Componentes SVG das bandeiras
 function PortugalFlag() {
   return (
@@ -1012,6 +1051,8 @@ export default function Home({ guideVideos, guideSlug }: { guideVideos: GuideVid
   // Estado da barra de cookies
   const [showCookieBar, setShowCookieBar] = useState(false);
   const [cookieBarMounted, setCookieBarMounted] = useState(false);
+  const [showCookiePreferences, setShowCookiePreferences] = useState(false);
+  const [cookiePrefs, setCookiePrefs] = useState<CookiePreferences>(DEFAULT_COOKIE_PREFERENCES);
 
   // Estados para animação de carregamento do guia
   const [isGuideThinking, setIsGuideThinking] = useState(false);
@@ -1418,13 +1459,17 @@ export default function Home({ guideVideos, guideSlug }: { guideVideos: GuideVid
     if (typeof window !== 'undefined') {
       setCookieBarMounted(true);
       const cookieConsent = localStorage.getItem('cookieConsent');
-      console.log('Cookie consent status:', cookieConsent);
       if (cookieConsent === 'accepted' || cookieConsent === 'declined') {
         setShowCookieBar(false);
-        console.log('Cookie bar hidden - consent already given');
+      } else if (cookieConsent && cookieConsent.startsWith('{')) {
+        try {
+          JSON.parse(cookieConsent);
+          setShowCookieBar(false);
+        } catch {
+          setShowCookieBar(true);
+        }
       } else {
         setShowCookieBar(true);
-        console.log('Cookie bar shown - no consent yet');
       }
     }
   }, []);
@@ -1460,16 +1505,37 @@ export default function Home({ guideVideos, guideSlug }: { guideVideos: GuideVid
   // Funções para lidar com os cookies
   const handleAcceptCookies = () => {
     if (typeof window !== 'undefined') {
-      localStorage.setItem('cookieConsent', 'accepted');
+      const allAccepted: CookiePreferences = { necessary: true, analytics: true, marketing: true, functional: true };
+      saveCookiePreferences(allAccepted);
+      setCookiePrefs(allAccepted);
       setShowCookieBar(false);
+      setShowCookiePreferences(false);
     }
   };
 
   const handleDeclineCookies = () => {
     if (typeof window !== 'undefined') {
-      localStorage.setItem('cookieConsent', 'declined');
+      const declined: CookiePreferences = { ...DEFAULT_COOKIE_PREFERENCES };
+      saveCookiePreferences(declined);
+      setCookiePrefs(declined);
       setShowCookieBar(false);
+      setShowCookiePreferences(false);
     }
+  };
+
+  const handleOpenCookiePreferences = () => {
+    setCookiePrefs(loadCookiePreferences());
+    setShowCookiePreferences(true);
+  };
+
+  const handleSaveCookiePreferences = () => {
+    saveCookiePreferences(cookiePrefs);
+    setShowCookieBar(false);
+    setShowCookiePreferences(false);
+  };
+
+  const setCookiePref = (key: keyof CookiePreferences, value: boolean) => {
+    setCookiePrefs((prev) => ({ ...prev, [key]: value }));
   };
 
   // Resetar posição do PiP quando a orientação do dispositivo muda
@@ -8095,10 +8161,7 @@ export default function Home({ guideVideos, guideSlug }: { guideVideos: GuideVid
       )}
 
       {/* Barra de Cookies */}
-      {(() => {
-        console.log('Cookie bar render check:', { cookieBarMounted, showCookieBar });
-        return cookieBarMounted && showCookieBar;
-      })() && (
+      {cookieBarMounted && showCookieBar && (
         <div className={styles.cookieBar}>
           <div className={styles.cookieBarContent}>
             <div className={styles.cookieBarText}>
@@ -8112,17 +8175,114 @@ export default function Home({ guideVideos, guideSlug }: { guideVideos: GuideVid
               </span>
             </div>
             <div className={styles.cookieBarButtons}>
-              <button 
-                onClick={handleAcceptCookies}
-                className={styles.cookieBarAccept}
+              <button
+                type="button"
+                onClick={handleOpenCookiePreferences}
+                className={styles.cookieBarCustomize}
               >
-                Aceitar
+                PERSONALIZAÇÃO
               </button>
               <button 
                 onClick={handleDeclineCookies}
                 className={styles.cookieBarDecline}
               >
                 Recusar
+              </button>
+              <button 
+                onClick={handleAcceptCookies}
+                className={styles.cookieBarAccept}
+              >
+                Aceitar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Personalização de Cookies */}
+      {showCookiePreferences && (
+        <div 
+          className={styles.cookiePrefsOverlay} 
+          onClick={(e) => { if (e.target === e.currentTarget) setShowCookiePreferences(false); }}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="cookie-prefs-title"
+        >
+          <div className={styles.cookiePrefsModal}>
+            <div className={styles.cookiePrefsHeader}>
+              <h2 id="cookie-prefs-title" className={styles.cookiePrefsTitle}>🍪 Preferências de cookies</h2>
+              <button
+                type="button"
+                className={styles.cookiePrefsClose}
+                onClick={() => setShowCookiePreferences(false)}
+                aria-label="Fechar"
+              >
+                ×
+              </button>
+            </div>
+            <p className={styles.cookiePrefsIntro}>
+              Pode ativar ou desativar cada tipo de cookies. Os cookies necessários são obrigatórios para o funcionamento do site.
+            </p>
+            <div className={styles.cookiePrefsList}>
+              <div className={styles.cookiePrefsItem}>
+                <div className={styles.cookiePrefsLabel}>
+                  <span className={styles.cookiePrefsName}>Necessários</span>
+                  <span className={styles.cookiePrefsDesc}>Essenciais para o funcionamento do site. Não podem ser desativados.</span>
+                </div>
+                <label className={styles.cookiePrefsToggle}>
+                  <input type="checkbox" checked={true} disabled readOnly />
+                  <span className={styles.cookiePrefsSwitch} />
+                </label>
+              </div>
+              <div className={styles.cookiePrefsItem}>
+                <div className={styles.cookiePrefsLabel}>
+                  <span className={styles.cookiePrefsName}>Analíticos</span>
+                  <span className={styles.cookiePrefsDesc}>Ajudam a entender como os visitantes utilizam o site.</span>
+                </div>
+                <label className={styles.cookiePrefsToggle}>
+                  <input
+                    type="checkbox"
+                    checked={cookiePrefs.analytics}
+                    onChange={(e) => setCookiePref('analytics', e.target.checked)}
+                  />
+                  <span className={styles.cookiePrefsSwitch} />
+                </label>
+              </div>
+              <div className={styles.cookiePrefsItem}>
+                <div className={styles.cookiePrefsLabel}>
+                  <span className={styles.cookiePrefsName}>Marketing</span>
+                  <span className={styles.cookiePrefsDesc}>Usados para mostrar anúncios relevantes e medir campanhas.</span>
+                </div>
+                <label className={styles.cookiePrefsToggle}>
+                  <input
+                    type="checkbox"
+                    checked={cookiePrefs.marketing}
+                    onChange={(e) => setCookiePref('marketing', e.target.checked)}
+                  />
+                  <span className={styles.cookiePrefsSwitch} />
+                </label>
+              </div>
+              <div className={styles.cookiePrefsItem}>
+                <div className={styles.cookiePrefsLabel}>
+                  <span className={styles.cookiePrefsName}>Funcionais</span>
+                  <span className={styles.cookiePrefsDesc}>Permitem funcionalidades como preferências e sessão.</span>
+                </div>
+                <label className={styles.cookiePrefsToggle}>
+                  <input
+                    type="checkbox"
+                    checked={cookiePrefs.functional}
+                    onChange={(e) => setCookiePref('functional', e.target.checked)}
+                  />
+                  <span className={styles.cookiePrefsSwitch} />
+                </label>
+              </div>
+            </div>
+            <div className={styles.cookiePrefsActions}>
+              <button type="button" onClick={() => setShowCookiePreferences(false)} className={styles.cookiePrefsCancel}>
+                Cancelar
+              </button>
+              <button type="button" onClick={handleSaveCookiePreferences} className={styles.cookiePrefsSave}>
+                Guardar preferências
               </button>
             </div>
           </div>

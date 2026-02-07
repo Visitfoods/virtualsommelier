@@ -166,6 +166,45 @@
   text-decoration: none;
 }
 
+.tableWrap {
+  overflow-x: auto;
+  margin: 16px 0;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.cookieTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+  color: #cccccc;
+}
+
+.cookieTable th,
+.cookieTable td {
+  padding: 12px 16px;
+  text-align: left;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.cookieTable th {
+  background: rgba(81, 174, 205, 0.15);
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.cookieTable tbody tr:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.cookieTable code {
+  font-size: 0.9em;
+  background: rgba(255, 255, 255, 0.08);
+  padding: 2px 8px;
+  border-radius: 4px;
+  color: #51aecd;
+}
+
 /* Responsividade */
 @media (max-width: 768px) {
   .container {
@@ -199,6 +238,12 @@
   
   .contactInfo {
     padding: 20px;
+  }
+
+  .cookieTable th,
+  .cookieTable td {
+    padding: 10px 12px;
+    font-size: 0.9rem;
   }
 }
 
