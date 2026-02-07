@@ -130,6 +130,7 @@ export async function uploadVideoWithProvider(
 ): Promise<{ path: string; fileName: string }> {
   try {
     let path: string;
+    let fileName: string;
     
     if (provider === 'bunny') {
       // Importar dinamicamente a função do Bunny Stream
@@ -145,13 +146,21 @@ export async function uploadVideoWithProvider(
           });
         } : undefined
       });
+      
+      // Para Bunny Stream, extrair o videoId da URL
+      // URL formato: https://vz-42532543-0c8.b-cdn.net/{videoId}/play_720p.mp4
+      const urlParts = path.split('/');
+      // O videoId é o penúltimo elemento (antes de play_720p.mp4)
+      fileName = urlParts[urlParts.length - 2] || '';
+      
+      console.log('🆔 [UPLOAD] videoId extraído para fileName:', fileName);
+      console.log('🔗 [UPLOAD] path completo:', path);
     } else {
       // Upload para Cloudflare Stream (padrão)
       path = await uploadVideoDirect(file, guideSlug, fileType, onProgress);
+      // Para Cloudflare, extrair o uid da URL
+      fileName = path.split('/').pop() || '';
     }
-    
-    // Extrair o nome do arquivo da URL
-    const fileName = path.split('/').pop() || '';
     
     return { path, fileName };
   } catch (error) {

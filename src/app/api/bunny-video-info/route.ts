@@ -27,6 +27,18 @@ export async function POST(req: NextRequest) {
     
     // Obter informações do vídeo
     const videoInfo = await getBunnyStreamVideoInfo(videoId);
+    console.log(`📊 Status do vídeo no Bunny:`, {
+      videoId,
+      status: videoInfo.status,
+      statusText: videoInfo.status === 0 ? 'Created' : 
+                  videoInfo.status === 1 ? 'Uploaded' : 
+                  videoInfo.status === 2 ? 'Processing' : 
+                  videoInfo.status === 3 ? 'Transcoding' : 
+                  videoInfo.status === 4 ? 'Finished' : 'Unknown',
+      availableResolutions: videoInfo.availableResolutions,
+      hasMP4Fallback: videoInfo.hasMP4Fallback,
+      encodeProgress: videoInfo.encodeProgress
+    });
     
     // Detectar melhor resolução disponível (para MP4)
     const resolution = await getBestAvailableResolution(videoId);

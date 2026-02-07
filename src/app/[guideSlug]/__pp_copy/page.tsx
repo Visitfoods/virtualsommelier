@@ -1231,11 +1231,12 @@ export default function Home({ guideVideos, guideSlug }: { guideVideos: GuideVid
             return url;
           }
           // Se não for force720p, tentar converter para HLS para bitrate adaptativo
-          const match = url.match(/b-cdn\.net\/([^/]+)/);
+          // Extrair o videoId corretamente (é o segmento entre o hostname e /play_)
+          const match = url.match(/b-cdn\.net\/([a-zA-Z0-9\-]+)\/play_/);
           if (match && match[1]) {
             const videoId = match[1];
             const convertedUrl = `https://${cdnHostname}/${videoId}/playlist.m3u8`;
-            console.log('🔄 Bunny MP4→HLS adaptativo:', { original: url, converted: convertedUrl });
+            console.log('🔄 Bunny MP4→HLS adaptativo:', { original: url, converted: convertedUrl, videoId });
             return convertedUrl;
           }
           // Se não conseguirmos extrair o videoId, usar o URL original
@@ -1265,6 +1266,19 @@ export default function Home({ guideVideos, guideSlug }: { guideVideos: GuideVid
             console.log('🔄 Bunny play→HLS:', { original: url, converted: convertedUrl });
             return convertedUrl;
           }
+        }
+        
+        // 2e) CORREÇÃO AUTOMÁTICA: Se o URL parece malformado (play_XXXp.mp4 aparece onde deveria estar o videoId)
+        // Isto acontece quando URLs antigos foram guardados com o bug do fileName
+        // Exemplos de URLs malformados:
+        // - https://vz-42532543-0c8.b-cdn.net/play_720p.mp4 (falta videoId)
+        // - https://iframe.mediadelivery.net/play_720p.mp4 (falta videoId)
+        if (url.match(/\/(play_\d+p\.mp4)(?:$|[?#])/)) {
+          console.warn('⚠️ URL do Bunny parece malformado (falta videoId):', url);
+          console.warn('💡 Este vídeo precisa de ser carregado novamente no backoffice.');
+          // Não conseguimos recuperar automaticamente sem o videoId correto
+          // Retornar URL vazio para forçar fallback
+          return '';
         }
         
         // 2f) Outros URLs do Bunny - retornar como está

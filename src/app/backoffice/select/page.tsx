@@ -1228,11 +1228,14 @@ export default function SelectDataSource() {
       let finalCaptionsByLang: any = oldCaptionsByLang ? { ...oldCaptionsByLang } : {};
 
       if (backgroundVideoFile) {
+        console.log('🎬 [EDIÇÃO] Iniciando upload de vídeo de fundo com provider:', videoProvider);
         const backgroundResult = await uploadVideoWithProvider(backgroundVideoFile, guideData.slug.trim(), 'background', videoProvider,
           (progress: UploadProgress) => {
             setBackgroundUploadProgress(progress.percentage);
           });
         finalBackgroundURL = backgroundResult.path;
+        console.log('📦 [EDIÇÃO] URL retornado do upload (backgroundResult.path):', finalBackgroundURL);
+        console.log('🏷️ [EDIÇÃO] Provider:', videoProvider);
       }
       if (mobileTabletBackgroundVideoFile) {
         const mobileTabletBackgroundResult = await uploadVideoWithProvider(mobileTabletBackgroundVideoFile, guideData.slug.trim(), 'mobileTabletBackground', videoProvider,
@@ -1242,11 +1245,13 @@ export default function SelectDataSource() {
         finalMobileTabletBackgroundURL = mobileTabletBackgroundResult.path;
       }
       if (welcomeVideoFile) {
+        console.log('🎬 [EDIÇÃO] Iniciando upload de vídeo welcome com provider:', videoProvider);
         const welcomeResult = await uploadVideoWithProvider(welcomeVideoFile, guideData.slug.trim(), 'welcome', videoProvider,
           (progress: UploadProgress) => {
             setWelcomeUploadProgress(progress.percentage);
           });
         finalWelcomeURL = welcomeResult.path;
+        console.log('📦 [EDIÇÃO] URL retornado do upload welcome (welcomeResult.path):', finalWelcomeURL);
       }
       if (chatIconFile) {
         setChatIconUploadProgress(50);
@@ -1391,6 +1396,12 @@ export default function SelectDataSource() {
 
       // Persistir todo o budgetConfig para garantir remoções de chaves
       // setDoc com merge:true não remove chaves antigas; por isso, fazemos updateDoc explícito do budgetConfig
+      console.log('💾 [EDIÇÃO] Documento que será guardado no Firebase:', {
+        slug: editingGuide.slug,
+        backgroundVideoURL: updatePayload.backgroundVideoURL,
+        welcomeVideoURL: updatePayload.welcomeVideoURL,
+        videoProvider: updatePayload.videoProvider
+      });
       await setDoc(doc(db, 'guides', editingGuide.slug), updatePayload, { merge: true });
       // Forçar persistência explícita dos campos novos mesmo que o merge não os escreva por algum motivo
       await updateDoc(doc(db, 'guides', editingGuide.slug), {
@@ -1410,6 +1421,11 @@ export default function SelectDataSource() {
         console.log('📊 Dados guardados no Firebase:', savedData);
         console.log('💰 budgetConfig guardado:', savedData.budgetConfig);
         console.log('🔧 Campos guardados:', Object.keys(savedData.budgetConfig?.fields || {}));
+        console.log('🎬 Vídeos guardados no Firebase:', {
+          backgroundVideoURL: savedData.backgroundVideoURL,
+          welcomeVideoURL: savedData.welcomeVideoURL,
+          videoProvider: savedData.videoProvider
+        });
       }
 
       alert('Alterações guardadas com sucesso!');
@@ -1554,13 +1570,17 @@ export default function SelectDataSource() {
 
       if (backgroundVideoFile) {
         try {
+          console.log('🎬 Iniciando upload de vídeo de fundo com provider:', videoProvider);
           const backgroundResult = await uploadVideoWithProvider(backgroundVideoFile, guideData.slug.trim(), 'background', videoProvider,
             (progress: UploadProgress) => {
               setBackgroundUploadProgress(progress.percentage);
             });
           const relativePath = backgroundResult.path;
+          console.log('📦 URL retornado do upload (backgroundResult.path):', relativePath);
           // Guardar exatamente o URL devolvido pelo upload (sem proxy)
           uploadedBackgroundURL = toStreamUrl(relativePath);
+          console.log('💾 URL que será guardado no Firebase (uploadedBackgroundURL):', uploadedBackgroundURL);
+          console.log('🏷️ Provider que será guardado:', videoProvider);
           
         } catch (error) {
           console.error('Erro ao processar vídeo principal:', error);
@@ -1819,6 +1839,13 @@ export default function SelectDataSource() {
         // Removido: contactInfo
       };
 
+      console.log('💾 Documento que será guardado no Firebase:', {
+        slug: guideDoc.slug,
+        backgroundVideoURL: guideDoc.backgroundVideoURL,
+        welcomeVideoURL: guideDoc.welcomeVideoURL,
+        videoProvider: guideDoc.videoProvider
+      });
+      
       await setDoc(doc(db, 'guides', guideDoc.slug), guideDoc);
 
       

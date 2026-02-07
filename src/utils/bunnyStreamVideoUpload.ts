@@ -99,9 +99,13 @@ export async function uploadVideoToBunnyStreamDirect(
             });
             
             if (infoResponse.ok) {
-              const { mp4Url, resolution } = await infoResponse.json();
+              const infoData = await infoResponse.json();
+              console.log('📊 Resposta completa de /api/bunny-video-info:', infoData);
+              const { mp4Url, resolution, videoInfo } = infoData;
               const finalUrl = typeof mp4Url === 'string' && mp4Url.length > 0 ? mp4Url : publicUrl;
               console.log(`🎬 URL MP4 selecionada (${resolution}p): ${finalUrl}`);
+              console.log(`📦 publicUrl original (fallback): ${publicUrl}`);
+              console.log(`🎥 Status do vídeo: ${videoInfo?.status}`);
               if (onComplete) {
                 onComplete(finalUrl);
               }
