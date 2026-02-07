@@ -237,7 +237,8 @@ export async function ask(userInput: string, opts: AskOpts = {}) {
 
   const apiKey = process.env.OPENROUTER_API_KEY || process.env.OPENAI_API_KEY;
   const url = "https://openrouter.ai/api/v1/chat/completions";
-  const maxTokens = typeof opts.max_output_tokens === "number" ? opts.max_output_tokens : decideMaxTokens(userInput);
+  const decided = typeof opts.max_output_tokens === "number" ? opts.max_output_tokens : decideMaxTokens(userInput);
+  const maxTokens = Math.min(384, decided);
   const body = {
     model,
     messages,
@@ -248,7 +249,7 @@ export async function ask(userInput: string, opts: AskOpts = {}) {
   } as const;
 
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 20000); // reduzir timeout para respostas mais rápidas
+  const timeout = setTimeout(() => controller.abort(), 8000); // reduzir timeout para respostas mais rápidas
   const init: RequestInit & { signal: AbortSignal } = {
     method: "POST",
     headers: {

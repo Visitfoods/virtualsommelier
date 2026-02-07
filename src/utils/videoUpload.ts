@@ -111,3 +111,51 @@ export async function uploadVideo(
     throw error;
   }
 }
+
+/**
+ * Upload de vídeo com seleção de provider (Cloudflare ou Bunny Stream)
+ * @param file O arquivo de vídeo a ser enviado
+ * @param guideSlug O slug do guia
+ * @param fileType O tipo do arquivo ('background', 'welcome' ou 'mobileTabletBackground')
+ * @param provider O provider de vídeo ('cloudflare' ou 'bunny')
+ * @param onProgress Callback para atualizar o progresso do upload
+ * @returns Uma promessa com o caminho e nome do arquivo
+ */
+export async function uploadVideoWithProvider(
+  file: File,
+  guideSlug: string,
+  fileType: 'background' | 'welcome' | 'mobileTabletBackground',
+  provider: 'cloudflare' | 'bunny',
+  onProgress?: (progress: UploadProgress) => void
+): Promise<{ path: string; fileName: string }> {
+  try {
+    let path: string;
+    
+    if (provider === 'bunny') {
+      // Importar dinamicamente a função do Bunny Stream
+      const { uploadVideoToBunnyStreamDirect } = await import('./bunnyStreamVideoUpload');
+      
+      // Upload para Bunny Stream
+      path = await uploadVideoToBunnyStreamDirect(file, guideSlug, {
+        onProgress: onProgress ? (progress) => {
+          onProgress({
+            loaded: progress.loaded,
+            total: progress.total,
+            percentage: progress.percentage
+          });
+        } : undefined
+      });
+    } else {
+      // Upload para Cloudflare Stream (padrão)
+      path = await uploadVideoDirect(file, guideSlug, fileType, onProgress);
+    }
+    
+    // Extrair o nome do arquivo da URL
+    const fileName = path.split('/').pop() || '';
+    
+    return { path, fileName };
+  } catch (error) {
+    console.error(`Erro no upload de vídeo para ${provider}:`, error);
+    throw error;
+  }
+}

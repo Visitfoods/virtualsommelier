@@ -92,15 +92,58 @@ export async function POST(req: NextRequest) {
     // MAS apenas se não parecer que a resposta já está presente no system prompt
     const systemHasAnswer = isLikelyAnsweredInSystem(String(cleanOpts?.system || enrichedSystem || ''), String(q || ''));
     const forceScrape = Boolean((opts as any)?.forceScrape === true);
+    let cacheUsed = false; // Flag para controlar se usou cache
     if (websiteUrl && !looksLikeProductIntent && !systemHasAnswer && !forceScrape) {
+      // 1) Tentar obter dados em cache do Firestore (scraping agendado)
       try {
+        const { MemoryScrapingStorage } = await import('@/services/memoryScrapingStorage');
+        const domain = (() => { try { return new URL(websiteUrl).hostname; } catch { return ''; } })();
+        if (domain) {
+          const cachedPages = await MemoryScrapingStorage.getValidByDomain(domain);
+          if (cachedPages && cachedPages.length > 0) {
+            const qLower = String(q || '').toLowerCase();
+            const tokens = qLower.split(/\s+/).filter(Boolean);
+            const scored = cachedPages.map((p: any) => {
+              const title = (p.title || '').toLowerCase();
+              const body = (p.text || '').toLowerCase();
+              let score = 0;
+              if (qLower.length >= 3 && (title.includes(qLower) || body.includes(qLower))) score += 20;
+              if (tokens.length >= 2) {
+                const idxs: number[] = [];
+                for (const tok of tokens) { const i = body.indexOf(tok); if (i >= 0) idxs.push(i); }
+                if (idxs.length >= 2) { idxs.sort((a,b)=>a-b); const minGap = idxs.slice(1).reduce((m, v, i)=>Math.min(m, v-idxs[i]), Infinity); if (minGap < 50) score += 10; else if (minGap < 120) score += 5; }
+              }
+              for (const tok of tokens) if (title.includes(tok)) score += 4;
+              if (p.kind === 'product') score += 3;
+              return { p, score };
+            }).sort((a, b) => b.score - a.score).slice(0, 5);
+            if (scored.length > 0) {
+              const snippet = scored.map(({ p }: any) => `- ${p.title || p.url}\n${(p.text || '').slice(0, 600)}`).join('\n\n');
+              const scrapeCtx = `\n\nContexto do website (excertos - cache 4h):\n${snippet}`;
+              enrichedSystem = (enrichedSystem || '').concat(scrapeCtx);
+              console.log(`✅ Usando dados em cache para ${websiteUrl} (${cachedPages.length} páginas)`);
+              cacheUsed = true; // Marcar que usou cache
+              // Saltar scraping live pois já temos contexto - prossegue para ask()
+            } else {
+              console.log(`⚠️ Cache encontrado mas sem contexto útil para "${q}". Fazendo scraping live...`);
+              // Se cache não fornece contexto útil, cai no scraping live abaixo
+            }
+          }
+        }
+      } catch {}
+
+      // 2) Scraping live APENAS se não há cache válido (otimizado para velocidade)
+      if (!cacheUsed) {
+        try {
+        console.log(`🔄 Nenhum cache encontrado para ${websiteUrl}. Fazendo scraping live otimizado...`);
         const scrapeUrl = new URL(req.url);
         scrapeUrl.pathname = '/api/website-scraper';
-        // Enviar API key (header + fallback query) para passar no simpleApiKeyAuth
         const apiKey = process.env.SIMPLE_API_KEY || process.env.NEXT_PUBLIC_API_KEY;
         if (apiKey) {
           try { scrapeUrl.searchParams.set('apiKey', apiKey); } catch {}
         }
+        
+        // Scraping otimizado: menos páginas, timeout menor, HTML menor
         const resp = await fetch(scrapeUrl.toString(), {
           method: 'POST',
           headers: {
@@ -108,11 +151,31 @@ export async function POST(req: NextRequest) {
             ...(apiKey ? { 'x-api-key': apiKey } : {})
           },
           cache: 'no-store',
-          body: JSON.stringify({ websiteUrl, maxPages: 30, maxDepth: 2 })
+          body: JSON.stringify({ 
+            websiteUrl, 
+            maxPages: 15,        // Reduzido de 30 para 15
+            maxDepth: 1,         // Reduzido de 2 para 1
+            maxConcurrency: 4,   // Reduzido para 4 workers
+            timeoutMs: 4000,     // Timeout de 4s
+            maxHtmlBytes: 100000 // HTML menor (100KB)
+          })
         });
+        
         if (resp.ok) {
           const data = await resp.json();
           const pages: Array<{ url: string; title?: string; text?: string; kind?: string }> = Array.isArray(data?.pages) ? data.pages : [];
+          
+          // Salvar no cache para futuras consultas
+          if (pages.length > 0) {
+            try {
+              const { MemoryScrapingStorage } = await import('@/services/memoryScrapingStorage');
+              await MemoryScrapingStorage.save(guideSlug, websiteUrl, pages);
+              console.log(`✅ Scraping live concluído e salvo no cache: ${pages.length} páginas`);
+            } catch (e) {
+              console.warn('Erro ao salvar no cache:', e);
+            }
+          }
+          
           // whitelist de URLs permitidas (inclui home)
           try {
             const base = new URL(websiteUrl);
@@ -121,40 +184,42 @@ export async function POST(req: NextRequest) {
             for (const p of pages) {
               try { const u = new URL(p.url); if (u.origin === baseOrigin) list.add(u.href.split('#')[0]); } catch {}
             }
-            // limitar tamanho para não poluir o prompt
-            allowedUrls = Array.from(list).slice(0, 60);
-            const allowListForPrompt = allowedUrls.slice(0, 40).join('\n');
+            allowedUrls = Array.from(list).slice(0, 30); // Reduzido de 60 para 30
+            const allowListForPrompt = allowedUrls.slice(0, 20).join('\n'); // Reduzido de 40 para 20
             const guardrails = `\n\nREGRAS DE LINKS (OBRIGATÓRIO):\n- Não inventes links.\n- Só podes incluir URLs do domínio ${baseOrigin}.\n- Preferencialmente usa apenas estas URLs (whitelist):\n${allowListForPrompt}\n- Se não tiveres um URL exatamente aplicável, responde sem link.`;
             enrichedSystem = (enrichedSystem || '').concat(guardrails);
           } catch {}
-          // selecionar páginas mais relevantes para a query do utilizador (scoring semântico leve)
+          
+          // selecionar páginas mais relevantes (scoring otimizado)
           const qLower = String(q || '').toLowerCase();
           const tokens = qLower.split(/\s+/).filter(Boolean);
           const scored = pages.map(p => {
             const title = (p.title || '').toLowerCase();
             const body = (p.text || '').toLowerCase();
             let score = 0;
-            // frase exata
             if (qLower.length >= 3 && (title.includes(qLower) || body.includes(qLower))) score += 20;
-            // proximidade aproximada (usar primeiras ocorrências)
             if (tokens.length >= 2) {
               const idxs: number[] = [];
               for (const tok of tokens) { const i = body.indexOf(tok); if (i >= 0) idxs.push(i); }
               if (idxs.length >= 2) { idxs.sort((a,b)=>a-b); const minGap = idxs.slice(1).reduce((m, v, i)=>Math.min(m, v-idxs[i]), Infinity); if (minGap < 50) score += 10; else if (minGap < 120) score += 5; }
             }
-            // presença no título
             for (const tok of tokens) if (title.includes(tok)) score += 4;
-            // bónus se classificado como produto
             if (p.kind === 'product') score += 3;
             return { p, score };
-          }).sort((a, b) => b.score - a.score).slice(0, 5);
+          }).sort((a, b) => b.score - a.score).slice(0, 3); // Reduzido de 5 para 3 páginas
+          
           if (scored.length > 0) {
-            const snippet = scored.map(({ p }) => `- ${p.title || p.url}\n${(p.text || '').slice(0, 600)}`).join('\n\n');
+            const snippet = scored.map(({ p }) => `- ${p.title || p.url}\n${(p.text || '').slice(0, 400)}`).join('\n\n'); // Reduzido de 600 para 400 chars
             const scrapeCtx = `\n\nContexto do website (excertos):\n${snippet}`;
             enrichedSystem = (enrichedSystem || '').concat(scrapeCtx);
           }
+        } else {
+          console.warn(`❌ Scraping live falhou: ${resp.status}`);
         }
-      } catch {}
+        } catch (e) {
+          console.warn('Erro no scraping live:', e);
+        }
+      }
     }
 
     const r = await ask(String(q || ""), { ...cleanOpts, system: enrichedSystem });
@@ -219,8 +284,8 @@ export async function POST(req: NextRequest) {
       } catch { return text; }
     }
 
-    const safeText = await sanitizeLinks(String((r as any).text || ''), websiteUrl, allowedUrls);
-    const safeResponse = { ...r, text: safeText } as typeof r;
+    // Não sanitizar links aqui - deixar o cliente processar para manter formatação
+    const safeResponse = { ...r } as typeof r;
     // incluir responseId quando disponível no futuro (SDK streaming); por agora devolvemos o texto e modelo
     return Response.json(safeResponse);
   } catch (err) {

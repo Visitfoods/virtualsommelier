@@ -3,8 +3,8 @@ import type { Metadata } from 'next';
 // Nota: CSS global já é importado no layout raiz em `src/app/layout.tsx`.
 
 export const metadata: Metadata = {
-  title: 'Backoffice - Guia Real',
-  description: 'Painel administrativo para gerenciar conversas do Guia Real',
+  title: 'Backoffice Virtual Sommelier',
+  description: 'Painel administrativo para gerenciar conversas do Virtual Sommelier',
 };
 
 export default function BackofficeLayout({

@@ -1,0 +1,14 @@
+{
+  "crons": [
+    {
+      "path": "/api/scheduled-scraping?action=run",
+      "schedule": "0 */4 * * *"
+    }
+  ],
+  "functions": {
+    "src/app/api/scheduled-scraping/route.ts": {
+      "maxDuration": 300
+    }
+  }
+}
+

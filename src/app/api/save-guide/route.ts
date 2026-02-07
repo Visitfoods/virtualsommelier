@@ -79,6 +79,30 @@ export async function POST(request: NextRequest) {
       { merge: true }
     );
 
+    // Disparar scraping imediato para preencher cache (se houver websiteUrl)
+    try {
+      const websiteUrl = String((guideDoc as any)?.websiteUrl || '').trim();
+      if (websiteUrl) {
+        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+        const apiKey = process.env.SIMPLE_API_KEY || process.env.NEXT_PUBLIC_API_KEY;
+        await fetch(`${baseUrl}/api/website-scraper`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', ...(apiKey ? { 'x-api-key': apiKey } : {}) },
+          body: JSON.stringify({ websiteUrl, maxPages: 30, maxDepth: 2, maxConcurrency: 12, timeoutMs: 6000, maxHtmlBytes: 180000 })
+        }).then(async (resp) => {
+          if (!resp.ok) return;
+          const data = await resp.json();
+          const pages = Array.isArray(data?.pages) ? data.pages : [];
+          try {
+            const { ScrapingStorageService } = await import('@/services/scrapingStorageService');
+            await ScrapingStorageService.save(String(guideData.slug), websiteUrl, pages, { maxPages: 30, maxDepth: 2 });
+          } catch (e) {}
+        }).catch(() => {});
+      }
+    } catch (e) {
+      console.warn('Aviso: falha ao disparar scraping imediato:', e);
+    }
+
     // Exportar JSON do guia para FTP (virtualsommelier/<slug>/guide.json)
     try {
       const jsonBuffer = Buffer.from(JSON.stringify(guideDoc, null, 2));

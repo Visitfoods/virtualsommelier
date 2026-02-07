@@ -1097,31 +1097,199 @@ export default function Home({ guideVideos, guideSlug }: { guideVideos: GuideVid
     }
   };
 
+  // Fallback de resolução para vídeos Bunny Stream (MP4 play_XXXp.mp4)
+  // Tenta resoluções mais baixas quando uma resolução falha
+  const tryBunnyResolutionFallback = (videoEl: HTMLVideoElement | null): boolean => {
+    if (!videoEl) return false;
+    const src = (videoEl.currentSrc || videoEl.src || '').toString();
+    
+    // Se for HLS que falhou (playlist.m3u8 com 404), tentar MP4 diretamente
+    if (src.includes('b-cdn.net') && src.includes('playlist.m3u8')) {
+      const match = src.match(/b-cdn\.net\/([^/]+)/);
+      if (match && match[1]) {
+        const videoId = match[1];
+        // Tentar resoluções MP4 por ordem decrescente: 720p → 480p → 360p → 240p
+        const resolutions = [720, 480, 360, 240];
+        let attempted = false;
+        
+        const tryNextResolution = async (index: number = 0): Promise<void> => {
+          if (index >= resolutions.length) {
+            console.error('❌ Bunny: Nenhuma resolução MP4 disponível para', videoId);
+            return;
+          }
+          
+          const res = resolutions[index];
+          const fallbackUrl = `https://vz-42532543-0c8.b-cdn.net/${videoId}/play_${res}p.mp4`;
+          
+          try {
+            // Testar se o ficheiro existe com HEAD request
+            const response = await fetch(fallbackUrl, { method: 'HEAD' });
+            if (response.ok) {
+              console.warn(`🔄 Bunny: HLS não disponível, usando MP4 ${res}p`, { antigo: src, novo: fallbackUrl });
+              videoEl.src = fallbackUrl;
+              videoEl.load();
+              videoEl.play().catch(() => {});
+            } else {
+              // Tentar próxima resolução
+              await tryNextResolution(index + 1);
+            }
+          } catch {
+            // Tentar próxima resolução
+            await tryNextResolution(index + 1);
+          }
+        };
+        
+        tryNextResolution();
+        return true;
+      }
+      return false;
+    }
+    
+    // Só funciona para URLs MP4 do Bunny (play_XXXp.mp4)
+    if (!src || !src.includes('b-cdn.net') || !/play_\d+p\.mp4/.test(src)) {
+      return false;
+    }
+    
+    try {
+      const match = src.match(/play_(\d+)p\.mp4/);
+      if (!match) return false;
+      const currentRes = parseInt(match[1], 10);
+      const resolutions = [1080, 720, 480, 360, 240];
+      const currentIndex = resolutions.indexOf(currentRes);
+      
+      // Se já está na resolução mais baixa, não há mais fallbacks
+      if (currentIndex === -1 || currentIndex === resolutions.length - 1) {
+        return false;
+      }
+      
+      // Tentar próxima resolução mais baixa
+      const nextRes = resolutions[currentIndex + 1];
+      const newSrc = src.replace(/play_\d+p\.mp4/, `play_${nextRes}p.mp4`);
+      console.warn(`🔄 Bunny: fallback de resolução ${currentRes}p → ${nextRes}p`, { antigo: src, novo: newSrc });
+      videoEl.src = newSrc;
+      try {
+        videoEl.load();
+        videoEl.play().catch(() => {});
+      } catch {}
+      return true;
+    } catch (err) {
+      console.error('❌ Erro no fallback de resolução do Bunny:', err);
+      return false;
+    }
+  };
+
   // Normaliza o URL de vídeo para reprodução no frontoffice
-  // Agora padronizamos Cloudflare para HLS (.m3u8) para funcionar bem com <video> e PiP
-  const toStreamUrl = (url?: string | null) => {
+  // Suporta Cloudflare Stream e Bunny Stream
+  const toStreamUrl = (url?: string | null, provider?: 'cloudflare' | 'bunny' | null, force720p: boolean = false) => {
     if (!url) return '';
     try {
-      // 1) Uniformizar Cloudflare → HLS
-      if (url.includes('videodelivery.net/') || url.includes('iframe.videodelivery.net/')) {
-        // Extrair UID de várias formas (iframe, manifest, downloads, etc.)
-        const iframeMatch = url.match(/iframe\.videodelivery\.net\/([a-zA-Z0-9_-]{10,})/);
-        const directMatch = url.match(/videodelivery\.net\/([a-zA-Z0-9_-]{10,})/);
-        const uid = (iframeMatch && iframeMatch[1]) || (directMatch && directMatch[1]);
-        if (uid) return `https://videodelivery.net/${uid}/manifest/video.m3u8`;
+      // IMPORTANTE: Auto-detectar provider BASEADO NO URL (dar prioridade ao formato real)
+      // Mesmo que o videoProvider esteja definido como 'bunny', se o URL for do Cloudflare, processar como Cloudflare
+      const detectedProvider = 
+        (url.includes('videodelivery.net') || url.includes('iframe.videodelivery.net')) ? 'cloudflare' : 
+        (url.includes('b-cdn.net') || url.includes('bunnycdn.com') || url.includes('mediadelivery.net')) ? 'bunny' : 
+        provider; // Só usar o provider passado se não conseguir detectar pelo URL
+      
+      console.log('🎬 toStreamUrl:', { originalUrl: url, providerPassed: provider, detectedProvider, force720p });
+
+      // 1) Cloudflare Stream → HLS (.m3u8)
+      if (detectedProvider === 'cloudflare') {
+        if (url.includes('videodelivery.net/') || url.includes('iframe.videodelivery.net/')) {
+          // Extrair UID de várias formas (iframe, manifest, downloads, etc.)
+          const iframeMatch = url.match(/iframe\.videodelivery\.net\/([a-zA-Z0-9_-]{10,})/);
+          const directMatch = url.match(/videodelivery\.net\/([a-zA-Z0-9_-]{10,})/);
+          const uid = (iframeMatch && iframeMatch[1]) || (directMatch && directMatch[1]);
+          if (uid) {
+            const convertedUrl = `https://videodelivery.net/${uid}/manifest/video.m3u8`;
+            console.log('🔄 Cloudflare convertido:', { original: url, converted: convertedUrl });
+            return convertedUrl;
+          }
+        }
       }
 
-      // 2) Proxy especial para ficheiros hospedados em visitfoods.pt (legado FTP)
-      if (url.includes('/vg-video/')) return url; // idempotência
+      // 2) Bunny Stream → Processar diferentes formatos de URL
+      if (detectedProvider === 'bunny') {
+        // CDN hostname da biblioteca Bunny Stream
+        const cdnHostname = 'vz-42532543-0c8.b-cdn.net';
+        
+        // 2a) Se for URL HLS (.m3u8) - usar diretamente (melhor compatibilidade e bitrate adaptativo)
+        // NÃO converter HLS para MP4, pois:
+        // - O HLS adaptativo é mais eficiente
+        // - O MP4 pode ainda não estar processado no Bunny
+        // - O HLS já suporta múltiplas resoluções automaticamente
+        if (url.includes('.m3u8')) {
+          console.log('✅ toStreamUrl retornou (Bunny HLS - mantém HLS):', url);
+          return url;
+        }
+        
+        // 2b) Se for URL MP4 direta do Bunny CDN (vz-*.b-cdn.net/{videoId}/play_XXXp.mp4)
+        if (url.includes('b-cdn.net') && url.includes('/play_')) {
+          // Já é um MP4 direto, usar como está (ou converter para HLS se não for force720p)
+          if (force720p) {
+            // Manter o MP4 original (pode ser qualquer resolução disponível)
+            console.log('✅ toStreamUrl retornou (Bunny MP4 - mantém):', url);
+            return url;
+          }
+          // Se não for force720p, tentar converter para HLS para bitrate adaptativo
+          const match = url.match(/b-cdn\.net\/([^/]+)/);
+          if (match && match[1]) {
+            const videoId = match[1];
+            const convertedUrl = `https://${cdnHostname}/${videoId}/playlist.m3u8`;
+            console.log('🔄 Bunny MP4→HLS adaptativo:', { original: url, converted: convertedUrl });
+            return convertedUrl;
+          }
+          // Se não conseguirmos extrair o videoId, usar o URL original
+          console.log('⚠️ Não consegui extrair videoId do Bunny, usando original:', url);
+          return url;
+        }
+        
+        // 2c) Se for URL de embed do Bunny (iframe.mediadelivery.net/embed/{libraryId}/{videoId})
+        if (url.includes('iframe.mediadelivery.net/embed/')) {
+          const match = url.match(/iframe\.mediadelivery\.net\/embed\/(\d+)\/([a-f0-9-]+)/);
+          if (match) {
+            const [, , videoId] = match;
+            // Sempre usar HLS playlist (adaptativo e mais compatível)
+            const convertedUrl = `https://${cdnHostname}/${videoId}/playlist.m3u8`;
+            console.log('🔄 Bunny embed→HLS:', { original: url, converted: convertedUrl });
+            return convertedUrl;
+          }
+        }
+        
+        // 2d) Se for URL de play do Bunny (video.bunnycdn.com/play/{libraryId}/{videoId})
+        if (url.includes('video.bunnycdn.com/play/')) {
+          const match = url.match(/video\.bunnycdn\.com\/play\/(\d+)\/([a-f0-9-]+)/);
+          if (match) {
+            const [, , videoId] = match;
+            // Sempre usar HLS playlist (adaptativo e mais compatível)
+            const convertedUrl = `https://${cdnHostname}/${videoId}/playlist.m3u8`;
+            console.log('🔄 Bunny play→HLS:', { original: url, converted: convertedUrl });
+            return convertedUrl;
+          }
+        }
+        
+        // 2f) Outros URLs do Bunny - retornar como está
+        console.log('✅ toStreamUrl retornou (Bunny outros):', url);
+        return url;
+      }
+
+      // 3) Proxy especial para ficheiros hospedados em visitfoods.pt (legado FTP)
+      if (url.includes('/vg-video/')) {
+        console.log('✅ toStreamUrl retornou (vg-video):', url);
+        return url; // idempotência
+      }
       const u = new URL(url, window.location.origin);
       if ((u.hostname === 'visitfoods.pt' || u.hostname === 'www.visitfoods.pt') && u.pathname !== '/vg-video/') {
         const pathOnly = u.pathname;
-        return `https://visitfoods.pt/vg-video/?file=${encodeURIComponent(pathOnly)}`;
+        const proxyUrl = `https://visitfoods.pt/vg-video/?file=${encodeURIComponent(pathOnly)}`;
+        console.log('✅ toStreamUrl retornou (proxy):', proxyUrl);
+        return proxyUrl;
       }
 
-      // 3) Caso contrário, devolver como está
+      // 4) Caso contrário, devolver como está
+      console.log('✅ toStreamUrl retornou (original):', url);
       return url;
-    } catch {
+    } catch (error) {
+      console.error('❌ Erro em toStreamUrl:', error);
       return url;
     }
   };
@@ -1497,7 +1665,7 @@ export default function Home({ guideVideos, guideSlug }: { guideVideos: GuideVid
   const [isSlowNetwork, setIsSlowNetwork] = useState(false);
   // Pré-carregar o vídeo principal ao abrir o site
   useEffect(() => {
-    const url = toStreamUrl(guideVideos?.welcomeVideoURL) || '';
+    const url = toStreamUrl(guideVideos?.welcomeVideoURL, guideVideos?.videoProvider) || '';
     if (!url) return;
 
     setMainVideoLoading(true);
@@ -1853,7 +2021,7 @@ export default function Home({ guideVideos, guideSlug }: { guideVideos: GuideVid
   }, []);
   // Otimização: preload do vídeo do PiP e prewarm de conexão
   useEffect(() => {
-    const url = toStreamUrl(guideVideos?.welcomeVideoURL || '') || '';
+    const url = toStreamUrl(guideVideos?.welcomeVideoURL || '', guideVideos?.videoProvider) || '';
     if (!url || isDesktop || isSlowNetwork) return; // Em redes lentas, não fazer prewarm
     try {
       // Inserir <link rel="preload" as="video">
@@ -2272,16 +2440,16 @@ export default function Home({ guideVideos, guideSlug }: { guideVideos: GuideVid
       const currentVideoURL = (isMobile || isTablet) && guideVideos?.mobileTabletBackgroundVideoURL 
         ? guideVideos.mobileTabletBackgroundVideoURL 
         : guideVideos?.backgroundVideoURL;
-      bg.src = toStreamUrl(currentVideoURL) || "/Judite_2.mp4";
+      bg.src = toStreamUrl(currentVideoURL, guideVideos?.videoProvider, true) || "/Judite_2.mp4";
     }
 
     if (welcome && guideVideos?.backgroundVideoURL) {
       const currentVideoURL = (isMobile || isTablet) && guideVideos?.mobileTabletBackgroundVideoURL 
         ? guideVideos.mobileTabletBackgroundVideoURL 
         : guideVideos?.backgroundVideoURL;
-      welcome.src = toStreamUrl(currentVideoURL) || "/Judite_2.mp4";
+      welcome.src = toStreamUrl(currentVideoURL, guideVideos?.videoProvider, true) || "/Judite_2.mp4";
     }
-  }, [isMobile, isTablet, guideVideos?.backgroundVideoURL, guideVideos?.mobileTabletBackgroundVideoURL]);
+  }, [isMobile, isTablet, guideVideos?.backgroundVideoURL, guideVideos?.mobileTabletBackgroundVideoURL, guideVideos?.videoProvider]);
   // Controlar scroll da página quando chatbot está aberto
   useEffect(() => {
     const isAndroid = /android/i.test(navigator.userAgent);
@@ -5824,15 +5992,28 @@ export default function Home({ guideVideos, guideSlug }: { guideVideos: GuideVid
               // Usar vídeo específico para mobile/tablet se existir e for mobile/tablet, senão usar o vídeo principal
               (isMobile || isTablet) && guideVideos?.mobileTabletBackgroundVideoURL 
                 ? guideVideos.mobileTabletBackgroundVideoURL 
-                : guideVideos?.backgroundVideoURL
+                : guideVideos?.backgroundVideoURL,
+              guideVideos?.videoProvider,
+              true // Forçar 720p para vídeo de background (otimização)
             ) || "/Judite_2.mp4"}
             onError={(e) => {
-              console.error('❌ Erro ao carregar vídeo de fundo:', e);
               const currentVideoURL = (isMobile || isTablet) && guideVideos?.mobileTabletBackgroundVideoURL 
                 ? guideVideos.mobileTabletBackgroundVideoURL 
                 : guideVideos?.backgroundVideoURL;
-              console.log('🔍 URL do vídeo de fundo:', currentVideoURL);
               const video = e.currentTarget;
+              console.error('❌ Erro ao carregar vídeo de fundo:', {
+                originalURL: currentVideoURL,
+                processedSrc: video.src,
+                videoProvider: guideVideos?.videoProvider,
+                error: e
+              });
+              
+              // Se for Bunny Stream, tentar fallback de resolução
+              if (guideVideos?.videoProvider === 'bunny' || (currentVideoURL && (currentVideoURL.includes('b-cdn.net') || currentVideoURL.includes('bunnycdn.com')))) {
+                const handled = tryBunnyResolutionFallback(video);
+                if (handled) return;
+              }
+              
               if (currentVideoURL && !String(video.src).includes('/vg-video/')) {
                 try {
                   const u = new URL(currentVideoURL, window.location.origin);
@@ -5871,7 +6052,7 @@ export default function Home({ guideVideos, guideSlug }: { guideVideos: GuideVid
             ref={videoRef}
             className={styles.bgVideo}
             src={(function(){
-              const computed = toStreamUrl(guideVideos?.welcomeVideoURL) || "";
+              const computed = toStreamUrl(guideVideos?.welcomeVideoURL, guideVideos?.videoProvider) || "";
               try { console.debug('[Video principal] src calculado:', computed, 'original:', guideVideos?.welcomeVideoURL); } catch {}
               return computed || "/VirtualGuide_PortugaldosPequeninos.webm";
             })()}
@@ -5910,6 +6091,17 @@ export default function Home({ guideVideos, guideSlug }: { guideVideos: GuideVid
               console.error('❌ Erro ao carregar vídeo principal:', e);
               console.log('🔍 URL do vídeo principal:', guideVideos?.welcomeVideoURL);
               const video = e.currentTarget;
+              
+              // Se for Bunny Stream, tentar fallback de resolução
+              if (guideVideos?.videoProvider === 'bunny' || (guideVideos?.welcomeVideoURL && (guideVideos.welcomeVideoURL.includes('b-cdn.net') || guideVideos.welcomeVideoURL.includes('bunnycdn.com')))) {
+                const handled = tryBunnyResolutionFallback(video);
+                if (handled) {
+                  setMainVideoError(false);
+                  setMainVideoLoading(true);
+                  return;
+                }
+              }
+              
               if (guideVideos?.welcomeVideoURL && !String(video.src).includes('/vg-video/')) {
                 try {
                   const u = new URL(guideVideos.welcomeVideoURL, window.location.origin);
@@ -5988,7 +6180,9 @@ export default function Home({ guideVideos, guideSlug }: { guideVideos: GuideVid
                 // Usar vídeo específico para mobile/tablet se existir e for mobile/tablet, senão usar o vídeo principal
                 (isMobile || isTablet) && guideVideos?.mobileTabletBackgroundVideoURL 
                   ? guideVideos.mobileTabletBackgroundVideoURL 
-                  : guideVideos?.backgroundVideoURL
+                  : guideVideos?.backgroundVideoURL,
+                guideVideos?.videoProvider,
+                true // Forçar 720p para vídeo de background (otimização)
               ) || "/Judite_2.mp4"}
               autoPlay
               loop
@@ -5997,11 +6191,23 @@ export default function Home({ guideVideos, guideSlug }: { guideVideos: GuideVid
               crossOrigin="anonymous"
                           preload={videoOptimization.recommendedPreload}
             onError={(e: any) => {
-                console.error('❌ Erro ao carregar vídeo de fundo (welcome):', e);
                 const video = e.currentTarget;
                 const currentVideoURL = (isMobile || isTablet) && guideVideos?.mobileTabletBackgroundVideoURL 
                   ? guideVideos.mobileTabletBackgroundVideoURL 
                   : guideVideos?.backgroundVideoURL;
+                console.error('❌ Erro ao carregar vídeo de fundo (welcome):', {
+                  originalURL: currentVideoURL,
+                  processedSrc: video.src,
+                  videoProvider: guideVideos?.videoProvider,
+                  error: e
+                });
+                
+                // Se for Bunny Stream, tentar fallback de resolução
+                if (guideVideos?.videoProvider === 'bunny' || (currentVideoURL && (currentVideoURL.includes('b-cdn.net') || currentVideoURL.includes('bunnycdn.com')))) {
+                  const handled = tryBunnyResolutionFallback(video);
+                  if (handled) return;
+                }
+                
                 if (currentVideoURL && !String(video.src).includes('/vg-video/')) {
                   try {
                     const u = new URL(currentVideoURL, window.location.origin);
@@ -6667,21 +6873,23 @@ export default function Home({ guideVideos, guideSlug }: { guideVideos: GuideVid
                                         html = html.replace('[[OPEN_HUMAN_CHAT]]', '');
                                       }
                                     }
-                                    // Remover URLs em texto quando vamos mostrar pré‑visualização (para evitar URL "crua" no topo)
+                                    // Remover textos entre parênteses retos antes dos links e manter URLs limpos
                                     try {
-                                      const urlsToHide = extractUrlsFromText(html);
-                                      if (urlsToHide && urlsToHide.length > 0) {
-                                        for (const u of urlsToHide) {
-                                          // remover ocorrência direta do URL
-                                          const esc = u.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-                                          html = html.replace(new RegExp(esc, 'g'), '');
-                                          // manter <a href> (clicável); apenas removemos o URL "cru" no texto
-                                        }
-                                        // remover padrões de markdown [texto](url)
-                                        html = html.replace(/\[[^\]]+\]\((https?:\/\/[^\s)]+)\)/gi, '');
-                                        // como existe preview, remover também [texto] isolado que ficou sem (url)
-                                        html = html.replace(/\[[^\]]+\]/g, '');
-                                      }
+                                      // Remover padrões [texto] antes de URLs
+                                      html = html.replace(/\[[^\]]+\]\s*(https?:\/\/[^\s<>")']+)/gi, '$1');
+                                      // Normalizar: mostrar só o URL como texto do link e manter o resto da mensagem
+                                      // 1) Converter markdown [texto](url) -> <a href="url">url</a>
+                                      html = html.replace(/\[[^\]]+\]\((https?:\/\/[^\s)]+)\)/gi, (_m, u) => `<a href="${u}" target="_blank" rel="noopener noreferrer">${u}</a>`);
+                                      // 2) Converter <a href="url">qualquer texto</a> -> <a href="url">url</a>
+                                      html = html.replace(/<a\s+[^>]*href=["']([^"']+)["'][^>]*>(.*?)<\/a>/gi, (_m, u) => `<a href="${u}" target="_blank" rel="noopener noreferrer">${u}</a>`);
+                                      // 3) Corrigir casos "quebrados" onde atributos surgem no texto: https://..." target="_blank" ...>Texto
+                                      html = html.replace(/(https?:\/\/[^\s"<>]+)\"[^>]*>[^<]*/gi, (_m, u) => `<a href="${u}" target="_blank" rel="noopener noreferrer">${u}</a>`);
+                                      // 3.1) Remover atributos soltos (target/rel) que aparecem como texto, não dentro de <a>
+                                      html = html.replace(/(^|[^<])\s*\"?\s*target=['"][^'\"]+['\"]\s+rel=['"][^'\"]+['"][\s]*>/gi, '$1');
+                                      html = html.replace(/(^|[^<])\s*target=['"][^'\"]+['\"]/gi, '$1');
+                                      html = html.replace(/(^|[^<])\s*rel=['"][^'\"]+['\"]/gi, '$1');
+                                      // 4) Autolink de URLs "crus" que restem (ignorar URLs já em href="...")
+                                      html = html.replace(/(?<!href=["'])(https?:\/\/[^\s<>"')]+)/gi, (m) => `<a href="${m}" target="_blank" rel="noopener noreferrer">${m}</a>`);
                                     } catch {}
                                     // Remover quaisquer asteriscos (ex.: markdown *lista*)
                                     try { html = html.replace(/\*/g, ''); } catch {}
@@ -7612,7 +7820,7 @@ export default function Home({ guideVideos, guideSlug }: { guideVideos: GuideVid
           <PiPOptimizedVideo
             ref={pipVideoRef}
             className={styles.pipVideo}
-            src={toStreamUrl(guideVideos?.welcomeVideoURL) || "/VirtualGuide_PortugaldosPequeninos.webm"}
+            src={toStreamUrl(guideVideos?.welcomeVideoURL, guideVideos?.videoProvider) || "/VirtualGuide_PortugaldosPequeninos.webm"}
             loop
             preload={pipOptimization.getPiPOptimizations().preload}
             playsInline

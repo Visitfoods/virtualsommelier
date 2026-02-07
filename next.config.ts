@@ -69,12 +69,12 @@ const nextConfig: NextConfig = {
       // Permitir web workers gerados via blob (necessário para hls.js com enableWorker)
       "worker-src 'self' blob:",
       // Imagens do próprio site e domínios configurados
-      "img-src 'self' data: blob: https://visitfoods.pt https://virtualguide.info https://lhwp3192.webapps.net https://firebasestorage.googleapis.com https://videodelivery.net https://*.cloudflarestream.com https://www.google.com https://*.gstatic.com https://companhiaportuguesa.pt https://www.companhiaportuguesa.pt https:",
-      // Cloudflare Stream e VideoDelivery; usar wildcard válido (*.cloudflarestream.com)
-      "media-src 'self' blob: https://videodelivery.net https://*.cloudflarestream.com",
-      "frame-src 'self' https://iframe.videodelivery.net https://*.cloudflarestream.com",
-      // Conexões de API externas necessárias
-      "connect-src 'self' https://openrouter.ai https://videodelivery.net https://*.cloudflarestream.com https://firestore.googleapis.com wss://firestore.googleapis.com https://*.googleapis.com https://www.gstatic.com https://cdn.jsdelivr.net",
+      "img-src 'self' data: blob: https://visitfoods.pt https://virtualguide.info https://lhwp3192.webapps.net https://firebasestorage.googleapis.com https://videodelivery.net https://*.cloudflarestream.com https://www.google.com https://*.gstatic.com https://companhiaportuguesa.pt https://www.companhiaportuguesa.pt https://*.b-cdn.net https:",
+      // Cloudflare Stream, VideoDelivery e Bunny Stream
+      "media-src 'self' blob: https://videodelivery.net https://*.cloudflarestream.com https://*.b-cdn.net",
+      "frame-src 'self' https://iframe.videodelivery.net https://*.cloudflarestream.com https://iframe.mediadelivery.net",
+      // Conexões de API externas necessárias (Cloudflare, Bunny Stream, Firebase, etc.)
+      "connect-src 'self' https://openrouter.ai https://videodelivery.net https://iframe.videodelivery.net https://*.cloudflarestream.com https://firestore.googleapis.com wss://firestore.googleapis.com https://*.googleapis.com https://www.gstatic.com https://cdn.jsdelivr.net https://video.bunnycdn.com https://*.b-cdn.net https://iframe.mediadelivery.net",
     ].join('; ');
 
     return [

@@ -149,39 +149,16 @@ export default function FollowersPage() {
       <div className={styles.backofficeHome}>
         <nav className={styles.topNav}>
           <div className={styles.navContainer}>
-            <div className={styles.navLeft}>
-              {!isAdmin ? (
-                <div className={styles.userInfo}>
-                  <span className={styles.userIcon}>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-                      <path d="M12 12c2.761 0 5-2.239 5-5s-2.239-5-5-5-5 2.239-5 5 2.239 5 5 5zm0 2c-3.866 0-7 2.239-7 5v2h14v-2c0-2.761-3.134-5-7-5z"/>
-                    </svg>
-                  </span>
-                  <span className={styles.userName}>{user?.username ? String(user.username) : 'Utilizador'}</span>
-                </div>
-              ) : null}
-            </div>
+            <div className={styles.navLeft}></div>
             <div className={styles.navRight}>
               {isAdmin ? (
                 <>
                   <Link href="/backoffice" className={styles.navLink}>Administração</Link>
-                  <Link href="/backoffice/select" className={styles.navLink}>Guias</Link>
+                  <Link href="/backoffice/select" className={styles.navLink}>Sommeliers</Link>
                   <Link href="/backoffice/conversations" className={styles.navLink}>Conversas & Contactos</Link>
+                  <Link href="/backoffice/scraping" className={styles.navLink}>Scraping</Link>
                   <Link href="/backoffice/followers" className={styles.navLink}>Seguidores</Link>
                   <Link href="/backoffice/users" className={styles.navLink}>Utilizadores</Link>
-                  <button 
-                    className={styles.navLink}
-                    onClick={() => router.push('/backoffice/users?create=1')}
-                    style={{ 
-                      background: 'linear-gradient(135deg, #ff6b6b, #4ecdc4)',
-                      border: 'none',
-                      cursor: 'pointer',
-                      color: 'white',
-                      fontWeight: '600'
-                    }}
-                  >
-                    Adicionar Utilizador
-                  </button>
                   <button 
                     className={styles.navLink}
                     onClick={() => router.push('/backoffice/select?create=1')}
@@ -193,7 +170,7 @@ export default function FollowersPage() {
                       fontWeight: '600'
                     }}
                   >
-                    Adicionar Guias
+                    Adicionar Sommeliers
                   </button>
                 </>
               ) : (
@@ -227,6 +204,14 @@ export default function FollowersPage() {
               {!isAdmin && (
                 <></>
               )}
+              <div className={styles.userInfo}>
+                <span className={styles.userIcon}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+                    <path d="M12 12c2.761 0 5-2.239 5-5s-2.239-5-5-5-5 2.239-5 5 2.239 5 5 5zm0 2c-3.866 0-7 2.239-7 5v2h14v-2c0-2.761-3.134-5-7-5z"/>
+                  </svg>
+                </span>
+                <span className={styles.userName}>{user?.username ? String(user.username) : 'Admin'}</span>
+              </div>
               <button 
                 className={styles.logoutButton}
                 onClick={async () => {

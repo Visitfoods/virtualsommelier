@@ -249,7 +249,7 @@ import { useAuth } from '../../../hooks/useAuth';
 import { doc, setDoc, serverTimestamp, collection, onSnapshot, query, orderBy, deleteDoc, getDoc, updateDoc, deleteField } from 'firebase/firestore';
 import { db as targetDb } from '../../../firebase/config';
 // Removido: import { mainDb } from '../../../firebase/mainConfig';
-import { uploadVideo, UploadProgress } from '../../../utils/videoUpload';
+import { uploadVideo, uploadVideoWithProvider, UploadProgress } from '../../../utils/videoUpload';
 import { copyImageToPublic } from '../../../utils/imageUpload';
 import { copyCaptionsToPublic } from '../../../utils/captionsUpload';
 
@@ -282,6 +282,7 @@ export default function SelectDataSource() {
   const [backgroundUploadProgress, setBackgroundUploadProgress] = useState<number>(0);
   const [mobileTabletBackgroundUploadProgress, setMobileTabletBackgroundUploadProgress] = useState<number>(0);
   const [welcomeUploadProgress, setWelcomeUploadProgress] = useState<number>(0);
+  const [videoProvider, setVideoProvider] = useState<'cloudflare' | 'bunny'>('cloudflare');
   const [chatIconFile, setChatIconFile] = useState<File | null>(null);
   const [companyIconFile, setCompanyIconFile] = useState<File | null>(null);
   const [chatIconUploadProgress, setChatIconUploadProgress] = useState<number>(0);
@@ -1085,6 +1086,7 @@ export default function SelectDataSource() {
         captions: data?.captions || null,
         captionsByLang: (data as any)?.captionsByLang || null
       });
+      setVideoProvider((data as any)?.videoProvider || 'cloudflare');
     } catch (err) {
       console.error('Erro ao carregar guia para edição:', err);
       alert('Erro ao preparar edição do guia.');
@@ -1226,21 +1228,21 @@ export default function SelectDataSource() {
       let finalCaptionsByLang: any = oldCaptionsByLang ? { ...oldCaptionsByLang } : {};
 
       if (backgroundVideoFile) {
-        const backgroundResult = await uploadVideo(backgroundVideoFile, guideData.slug.trim(), 'background', 
+        const backgroundResult = await uploadVideoWithProvider(backgroundVideoFile, guideData.slug.trim(), 'background', videoProvider,
           (progress: UploadProgress) => {
             setBackgroundUploadProgress(progress.percentage);
           });
         finalBackgroundURL = backgroundResult.path;
       }
       if (mobileTabletBackgroundVideoFile) {
-        const mobileTabletBackgroundResult = await uploadVideo(mobileTabletBackgroundVideoFile, guideData.slug.trim(), 'mobileTabletBackground', 
+        const mobileTabletBackgroundResult = await uploadVideoWithProvider(mobileTabletBackgroundVideoFile, guideData.slug.trim(), 'mobileTabletBackground', videoProvider,
           (progress: UploadProgress) => {
             setMobileTabletBackgroundUploadProgress(progress.percentage);
           });
         finalMobileTabletBackgroundURL = mobileTabletBackgroundResult.path;
       }
       if (welcomeVideoFile) {
-        const welcomeResult = await uploadVideo(welcomeVideoFile, guideData.slug.trim(), 'welcome',
+        const welcomeResult = await uploadVideoWithProvider(welcomeVideoFile, guideData.slug.trim(), 'welcome', videoProvider,
           (progress: UploadProgress) => {
             setWelcomeUploadProgress(progress.percentage);
           });
@@ -1353,6 +1355,7 @@ export default function SelectDataSource() {
         backgroundVideoURL: finalBackgroundURL,
         mobileTabletBackgroundVideoURL: finalMobileTabletBackgroundURL,
         welcomeVideoURL: finalWelcomeURL,
+        videoProvider: videoProvider,
         captions: { desktop: finalCaptionsDesktopURL, tablet: finalCaptionsTabletURL, mobile: finalCaptionsMobileURL },
         captionsByLang: Object.keys(finalCaptionsByLang).length ? finalCaptionsByLang : null,
         // Removido: helpPoints
@@ -1551,7 +1554,7 @@ export default function SelectDataSource() {
 
       if (backgroundVideoFile) {
         try {
-          const backgroundResult = await uploadVideo(backgroundVideoFile, guideData.slug.trim(), 'background',
+          const backgroundResult = await uploadVideoWithProvider(backgroundVideoFile, guideData.slug.trim(), 'background', videoProvider,
             (progress: UploadProgress) => {
               setBackgroundUploadProgress(progress.percentage);
             });
@@ -1570,7 +1573,7 @@ export default function SelectDataSource() {
       // Processar vídeo de fundo para mobile/tablet
       if (mobileTabletBackgroundVideoFile) {
         try {
-          const mobileTabletBackgroundResult = await uploadVideo(mobileTabletBackgroundVideoFile, guideData.slug.trim(), 'mobileTabletBackground',
+          const mobileTabletBackgroundResult = await uploadVideoWithProvider(mobileTabletBackgroundVideoFile, guideData.slug.trim(), 'mobileTabletBackground', videoProvider,
             (progress: UploadProgress) => {
               setMobileTabletBackgroundUploadProgress(progress.percentage);
             });
@@ -1589,7 +1592,7 @@ export default function SelectDataSource() {
       // Processar vídeo de boas‑vindas
       if (welcomeVideoFile) {
         try {
-          const welcomeResult = await uploadVideo(welcomeVideoFile, guideData.slug.trim(), 'welcome',
+          const welcomeResult = await uploadVideoWithProvider(welcomeVideoFile, guideData.slug.trim(), 'welcome', videoProvider,
             (progress: UploadProgress) => {
               setWelcomeUploadProgress(progress.percentage);
             });
@@ -1713,6 +1716,7 @@ export default function SelectDataSource() {
         backgroundVideoURL: uploadedBackgroundURL,
         mobileTabletBackgroundVideoURL: uploadedMobileTabletBackgroundURL,
         welcomeVideoURL: uploadedWelcomeURL,
+        videoProvider: videoProvider,
         captions: {
           desktop: uploadedCaptionsDesktopURL,
           tablet: uploadedCaptionsTabletURL,
@@ -2814,23 +2818,11 @@ export default function SelectDataSource() {
           <div className={styles.navLeft}></div>
           <div className={styles.navRight}>
             <Link href="/backoffice" className={styles.navLink}>Administração</Link>
-            <Link href="/backoffice/select" className={styles.navLink}>Guias</Link>
+            <Link href="/backoffice/select" className={styles.navLink}>Sommeliers</Link>
             <Link href="/backoffice/conversations" className={styles.navLink}>Conversas & Contactos</Link>
+            <Link href="/backoffice/scraping" className={styles.navLink}>Scraping</Link>
             <Link href="/backoffice/followers" className={styles.navLink}>Seguidores</Link>
             <Link href="/backoffice/users" className={styles.navLink}>Utilizadores</Link>
-            <button 
-              className={styles.navLink}
-              onClick={() => router.push('/backoffice/users?create=1')}
-              style={{ 
-                background: 'linear-gradient(135deg, #ff6b6b, #4ecdc4)',
-                border: 'none',
-                cursor: 'pointer',
-                color: 'white',
-                fontWeight: '600'
-              }}
-            >
-              Adicionar Utilizador
-            </button>
             <button 
               className={styles.navLink}
               onClick={handleCreateGuide}
@@ -2842,7 +2834,7 @@ export default function SelectDataSource() {
                 fontWeight: '600'
               }}
             >
-              Adicionar Guias
+              Adicionar Sommeliers
             </button>
             <div className={styles.userInfo}>
               <span className={styles.userIcon}>
@@ -3266,6 +3258,22 @@ export default function SelectDataSource() {
                       : 'Faça upload dos vídeos e, opcionalmente, de três ficheiros de legendas (.vtt) específicos por dispositivo.'
                     }
                   </p>
+                  
+                  <div className={styles.formGroup}>
+                    <label htmlFor="videoProvider">Provedor de Vídeo</label>
+                    <select
+                      id="videoProvider"
+                      value={videoProvider}
+                      onChange={(e) => setVideoProvider(e.target.value as 'cloudflare' | 'bunny')}
+                      className={styles.formInput}
+                    >
+                      <option value="cloudflare">Cloudflare Stream</option>
+                      <option value="bunny">Bunny Stream</option>
+                    </select>
+                    <small className={styles.formHelp}>
+                      Escolha o serviço que será usado para hospedar e entregar os vídeos do guia.
+                    </small>
+                  </div>
                   
                   <div className={styles.formGroup}>
                     <label htmlFor="backgroundVideo">Vídeo de Loading</label>
@@ -3986,7 +3994,7 @@ export default function SelectDataSource() {
                   </div>
 
                   <div className={styles.previewBox}>
-                    <h4>Chat com Guia Real</h4>
+                    <h4>Chat com Virtual Sommelier</h4>
                     <div className={styles.previewContent}>
                           <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                             <input

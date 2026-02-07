@@ -4,6 +4,7 @@ import { simpleApiKeyAuth } from '@/middleware/simpleApiKeyMiddleware';
 import { uploadBufferToAmen } from '@/lib/amenFtp';
 import { getFirestore, collection, getDocs, Timestamp } from 'firebase/firestore';
 import { initializeApp, getApps } from 'firebase/app';
+import { db as unifiedDb } from '@/firebase/config';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -30,26 +31,40 @@ const backupApp = (() => {
 
 const backupDb = getFirestore(backupApp);
 
-type AllowedProject = 'virtualchat-b0e17';
+type AllowedProject = 'virtualchat-b0e17' | 'virtualsommelier';
 
   // Mapa de coleções conhecidas por projeto (somente leitura)
 const PROJECT_COLLECTIONS: Record<AllowedProject, string[]> = {
-  'virtualchat-b0e17': ['contactoschatreal', 'conversations', 'followers', 'guides', 'orcamentos', 'users']
+  'virtualchat-b0e17': ['contactoschatreal', 'conversations', 'followers', 'guides', 'orcamentos', 'users'],
+  // Coleções usadas neste projeto Virtual Sommelier
+  'virtualsommelier': [
+    'guides',
+    'users',
+    'conversations',
+    'contact_requests',
+    'contactoschatreal',
+    'active_sessions',
+    'followers'
+  ]
 };
 
 function getDbForProject(project: AllowedProject) {
-  // Usar a configuração específica para backup via variáveis de ambiente
+  // Para o projeto "virtualsommelier", usar a DB unificada desta app
+  if (project === 'virtualsommelier') return unifiedDb;
+  // Para outros projetos alvo (ex.: virtualchat-b0e17), usar a app de backup configurada por envs
   return backupDb;
 }
 
 // Gera conteúdo Markdown com informações do backup
 function generateBackupMarkdown(project: AllowedProject, exported: any, date: Date) {
   const projectNames: Record<AllowedProject, string> = {
-    'virtualchat-b0e17': 'VirtualChat B0E17'
+    'virtualchat-b0e17': 'VirtualChat B0E17',
+    'virtualsommelier': 'Virtual Sommelier'
   };
 
   const projectDescriptions: Record<AllowedProject, string> = {
-    'virtualchat-b0e17': 'Base de dados principal - Guias, conversas, contactos'
+    'virtualchat-b0e17': 'Base de dados principal - Guias, conversas, contactos',
+    'virtualsommelier': 'Base de dados Virtual Sommelier - Guias, utilizadores, sessões e contactos'
   };
 
   const collections = PROJECT_COLLECTIONS[project];
@@ -212,7 +227,8 @@ export async function POST(request: NextRequest) {
       try { body = await request.json(); } catch { body = {}; }
     }
 
-    const project = (body?.project || 'virtualchat-b0e17') as AllowedProject;
+    // Por omissão, apontar para o projeto deste backoffice: "virtualsommelier"
+    const project = (body?.project || 'virtualsommelier') as AllowedProject;
     console.log(`📊 Projeto selecionado: ${project}`);
     
     if (!Object.keys(PROJECT_COLLECTIONS).includes(project)) {
@@ -236,13 +252,15 @@ export async function POST(request: NextRequest) {
     
     // Upload do ficheiro JSON
     console.log('☁️ Fazendo upload do ficheiro JSON...');
-    const jsonPath = `backups/${project}/${dateStr}/firestore-backup-${timestamp}.json`;
+    // Guardar na pasta com o título "virtualsommelier" quando for esse o projeto
+    const folderProject = project === 'virtualsommelier' ? 'virtualsommelier' : project;
+    const jsonPath = `backups/${folderProject}/${dateStr}/firestore-backup-${timestamp}.json`;
     const jsonUrl = await uploadBufferToAmen(jsonPath, Buffer.from(json, 'utf-8'));
     console.log('✅ Upload JSON concluído:', jsonUrl);
     
     // Upload do ficheiro Markdown
     console.log('☁️ Fazendo upload do ficheiro Markdown...');
-    const mdPath = `backups/${project}/${dateStr}/backup-info-${timestamp}.md`;
+    const mdPath = `backups/${folderProject}/${dateStr}/backup-info-${timestamp}.md`;
     const mdUrl = await uploadBufferToAmen(mdPath, Buffer.from(markdownContent, 'utf-8'));
     console.log('✅ Upload Markdown concluído:', mdUrl);
 

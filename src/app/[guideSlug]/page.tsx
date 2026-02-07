@@ -42,6 +42,7 @@ interface GuideVideos {
   backgroundVideoURL: string | null;
   mobileTabletBackgroundVideoURL: string | null;
   welcomeVideoURL: string | null;
+  videoProvider?: 'cloudflare' | 'bunny' | null;
   systemPrompt: string | null;
   websiteUrl?: string | null;
   chatConfig?: ChatConfig | null;
@@ -296,7 +297,8 @@ export default function GuideWrapper({ params }: PageProps) {
         const videos = {
           backgroundVideoURL: data?.backgroundVideoURL || null,
           mobileTabletBackgroundVideoURL: data?.mobileTabletBackgroundVideoURL || null,
-          welcomeVideoURL: data?.welcomeVideoURL || null
+          welcomeVideoURL: data?.welcomeVideoURL || null,
+          videoProvider: (data as any)?.videoProvider || null
         };
         const chatConfig: ChatConfig | null = data?.chatConfig || null;
         const helpPoints: HelpPoints | null = data?.helpPoints || null;
@@ -369,10 +371,17 @@ export default function GuideWrapper({ params }: PageProps) {
         }
 
         if (!aborted) {
+          console.log('📥 Dados do guia carregados:', {
+            backgroundVideoURL: videos.backgroundVideoURL,
+            welcomeVideoURL: videos.welcomeVideoURL,
+            videoProvider: videos.videoProvider
+          });
+          
           setGuideVideos({
             backgroundVideoURL: videos.backgroundVideoURL,
             mobileTabletBackgroundVideoURL: videos.mobileTabletBackgroundVideoURL,
             welcomeVideoURL: videos.welcomeVideoURL,
+            videoProvider: videos.videoProvider,
             systemPrompt: prompt,
             websiteUrl: websiteUrl,
             chatConfig,

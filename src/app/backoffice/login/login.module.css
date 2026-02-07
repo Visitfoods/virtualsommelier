@@ -3,9 +3,9 @@
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  background: radial-gradient(1200px 600px at 10% -10%, rgba(0,0,0,0.3) 0%, transparent 60%),
-              radial-gradient(800px 400px at 90% 0%, rgba(0,0,0,0.2) 0%, transparent 60%),
-              linear-gradient(135deg, #000000 0%, #1a1a1a 30%, #0d0d0d 70%, #000000 100%);
+  background: radial-gradient(1200px 600px at 10% -10%, rgba(69,9,32,0.3) 0%, transparent 60%),
+              radial-gradient(800px 400px at 90% 0%, rgba(69,9,32,0.2) 0%, transparent 60%),
+              linear-gradient(135deg, #450920 0%, #5a0f2a 30%, #3d0718 70%, #450920 100%);
   position: relative;
   overflow: hidden;
   padding: 20px;

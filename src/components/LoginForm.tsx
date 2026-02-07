@@ -48,14 +48,16 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, onError }) => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8" style={{
+      background: 'radial-gradient(1200px 600px at 10% -10%, rgba(69,9,32,0.3) 0%, transparent 60%), radial-gradient(800px 400px at 90% 0%, rgba(69,9,32,0.2) 0%, transparent 60%), linear-gradient(135deg, #450920 0%, #5a0f2a 30%, #3d0718 70%, #450920 100%)'
+    }}>
       <div className="max-w-md w-full space-y-8">
         <div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Iniciar Sessão
+            Backoffice Virtual Sommelier
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
-            Aceda ao seu painel de administração
+            Sistema de Gestão Virtual Sommelier
           </p>
         </div>
         

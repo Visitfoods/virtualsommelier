@@ -46,7 +46,7 @@ export default function Login() {
     <div className={styles.loginContainer}>
       <div className={styles.loginBox}>
         <div className={styles.loginHeader}>
-          <h1>Backoffice VirtualChat</h1>
+          <h1>Backoffice Virtual Sommelier</h1>
           <p>Aceda ao seu painel de administração</p>
         </div>
         
@@ -95,7 +95,7 @@ export default function Login() {
         </form>
         
         <div className={styles.loginFooter}>
-          <p>Sistema de Gestão VirtualChat</p>
+          <p>Sistema de Gestão Virtual Sommelier</p>
         </div>
       </div>
     </div>

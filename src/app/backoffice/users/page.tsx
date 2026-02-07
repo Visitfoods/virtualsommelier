@@ -443,34 +443,11 @@ export default function UserManagement() {
           <div className={styles.navLeft}></div>
           <div className={styles.navRight}>
             <Link href="/backoffice" className={styles.navLink}>Administração</Link>
-            <Link href="/backoffice/select" className={styles.navLink}>Guias</Link>
+            <Link href="/backoffice/select" className={styles.navLink}>Sommeliers</Link>
             <Link href="/backoffice/conversations" className={styles.navLink}>Conversas & Contactos</Link>
+            <Link href="/backoffice/scraping" className={styles.navLink}>Scraping</Link>
             <Link href="/backoffice/followers" className={styles.navLink}>Seguidores</Link>
             <Link href="/backoffice/users" className={styles.navLink}>Utilizadores</Link>
-            <button 
-              className={styles.navLink}
-              onClick={() => {
-                
-                // Se já estiver na página users, abrir modal diretamente
-                if (window.location.pathname === '/backoffice/users') {
-                  
-                  openCreateModal();
-                } else {
-                  
-                  // Se estiver noutra página, navegar para users com create=1
-                  router.push('/backoffice/users?create=1');
-                }
-              }}
-              style={{ 
-                background: 'linear-gradient(135deg, #ff6b6b, #4ecdc4)',
-                border: 'none',
-                cursor: 'pointer',
-                color: 'white',
-                fontWeight: '600'
-              }}
-            >
-              Adicionar Utilizador
-              </button>
             <button 
               className={styles.navLink}
               onClick={() => router.push('/backoffice/select?create=1')}
@@ -482,7 +459,7 @@ export default function UserManagement() {
                     fontWeight: '600'
               }}
             >
-              Adicionar Guias
+              Adicionar Sommeliers
             </button>
             <div className={styles.userInfo}>
               <span className={styles.userIcon}>

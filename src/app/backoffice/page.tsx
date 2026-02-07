@@ -25,15 +25,29 @@ export default function BackofficeRedirect() {
   const { user, isAuthenticated, isLoading: authLoading, logout } = useAuth();
   const [isLoading, setIsLoading] = useState(true);
   const [recentGuides, setRecentGuides] = useState<GuideData[]>([]);
-  const [selectedProject, setSelectedProject] = useState('virtualchat-b0e17');
+  const [selectedProject, setSelectedProject] = useState('virtualsommelier');
   const [isBackingUp, setIsBackingUp] = useState(false);
 
   // Opções de projetos Firebase disponíveis para backup
   const projectOptions = [
     {
+      id: 'virtualsommelier',
+      name: 'Virtual Sommelier',
+      description: 'Base de dados Virtual Sommelier - Guias, utilizadores, sessões e contactos',
+      collections: [
+        'guides',
+        'users',
+        'conversations',
+        'contact_requests',
+        'contactoschatreal',
+        'active_sessions',
+        'followers'
+      ]
+    },
+    {
       id: 'virtualchat-b0e17',
       name: 'VirtualChat B0E17',
-      description: 'Base de dados principal - Guias, conversas, contactos',
+      description: 'Base de dados principal - Sommeliers, conversas, contactos',
       collections: ['contactoschatreal', 'conversations', 'followers', 'guides', 'orcamentos', 'users']
     }
   ];
@@ -196,23 +210,11 @@ export default function BackofficeRedirect() {
           <div className={styles.navLeft}></div>
           <div className={styles.navRight}>
               <Link href="/backoffice" className={styles.navLink}>Administração</Link>
-              <Link href="/backoffice/select" className={styles.navLink}>Guias</Link>
+              <Link href="/backoffice/select" className={styles.navLink}>Sommeliers</Link>
               <Link href="/backoffice/conversations" className={styles.navLink}>Conversas & Contactos</Link>
+              <Link href="/backoffice/scraping" className={styles.navLink}>Scraping</Link>
               <Link href="/backoffice/followers" className={styles.navLink}>Seguidores</Link>
               <Link href="/backoffice/users" className={styles.navLink}>Utilizadores</Link>
-              <button 
-                className={styles.navLink}
-                onClick={() => router.push('/backoffice/users?create=1')}
-                style={{ 
-                  background: 'linear-gradient(135deg, #ff6b6b, #4ecdc4)',
-                  border: 'none',
-                  cursor: 'pointer',
-                  color: 'white',
-                  fontWeight: '600'
-                }}
-              >
-                Adicionar Utilizador
-              </button>
               <button 
                 className={styles.navLink}
                 onClick={() => router.push('/backoffice/select?create=1')}
@@ -224,7 +226,7 @@ export default function BackofficeRedirect() {
                   fontWeight: '600'
                 }}
               >
-                Adicionar Guias
+                Adicionar Sommeliers
               </button>
               <div className={styles.userInfo}>
                 <span className={styles.userIcon}>
@@ -261,8 +263,8 @@ export default function BackofficeRedirect() {
       
       <div className={styles.mainContent}>
         <div className={styles.welcomeSection}>
-          <h1>Bem-vindo ao painel de administração</h1>
-          <p>Escolha uma das opções abaixo para começar</p>
+          <h1>Backoffice Virtual Sommelier</h1>
+          <p>Sistema de Gestão Virtual Sommelier</p>
         </div>
         
         <div className={styles.backofficeActions}>
@@ -273,7 +275,7 @@ export default function BackofficeRedirect() {
               </svg>
             </span>
             <div className={styles.actionContent}>
-              <h3>Criar/Editar Guias</h3>
+              <h3>Criar/Editar Sommeliers</h3>
               <p>Gerir guias virtuais, FAQs e informações de contacto</p>
             </div>
           </Link>
@@ -362,7 +364,7 @@ export default function BackofficeRedirect() {
 
         {/* Grid dos últimos guias criados */}
         <div className={styles.recentGuidesSection}>
-          <h2 className={styles.sectionTitle}>Últimos Guias Criados</h2>
+          <h2 className={styles.sectionTitle}>Últimos Sommeliers Criados</h2>
           <div className={styles.guidesGrid}>
             {recentGuides.map((guide) => {
               // Função auxiliar para obter o título do guia
